@@ -110,6 +110,20 @@ Game parseGame(const string& line) {
     return { game_number, vector(pull_itr.begin(), pull_itr.end())};
 }
 
+BallSet calculateMinSet(const Game& game) {
+    auto min_set = BallSet();
+    for (const auto& pull : game.pulls) {
+        min_set.red_count = max(min_set.red_count, pull.red_count);
+        min_set.blue_count = max(min_set.blue_count, pull.blue_count);
+        min_set.green_count = max(min_set.green_count, pull.green_count);
+    }
+    return min_set;
+}
+
+int calculatePower(const BallSet& balls) {
+    return balls.red_count * balls.blue_count * balls.green_count;
+}
+
 bool ValidatePull(const BallSet& pull, const BallSet& universe) {
     return pull.red_count <= universe.red_count
         && pull.blue_count <= universe.blue_count
@@ -142,6 +156,17 @@ int part_1(const vector<Game>& games) {
     return gameNumberSum;
 }
 
+int part_2(const vector<Game>& games) {
+    auto powers = games
+        | views::transform(calculateMinSet)
+        | views::transform(calculatePower);
+    int powerSum = 0;
+    for(const auto& power : powers) {
+        powerSum += power;
+    }
+    return powerSum;
+}
+
 int main(int argc, char** argv) {
     const string filename = argc > 1 ? argv[1] : "input.txt";
     const vector<string> lines = readFile(INPUT_DIR + filename);
@@ -149,6 +174,6 @@ int main(int argc, char** argv) {
     const auto games = lines
         | views::transform(parseGame);
 
-    cout << part_1(vector<Game>(games.begin(), games.end())) << endl;
+    cout << part_2(vector<Game>(games.begin(), games.end())) << endl;
 
 }
