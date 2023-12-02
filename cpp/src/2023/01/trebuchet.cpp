@@ -8,10 +8,11 @@
 #include <fstream>
 #include <vector>
 #include <map>
+// #include <lib/io.h>
 
 using namespace std;
 
-const string INPUT_DIR = "/Users/conorpappas/current/advent_of_code/2023/cpp/input/2023/01/";
+const string INPUT_DIR = "/Users/conorpappas/current/advent_of_code/cpp/input/2023/01/";
 
 #define REPLACE_TEXT true
 
