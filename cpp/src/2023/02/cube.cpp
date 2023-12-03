@@ -1,6 +1,6 @@
 //
 // Day 2: Cube Conundrum
-// https://adventofcode.com/2023/day/1
+// https://adventofcode.com/2023/day/2
 //
 // Created by Conor Pappas on 12/2/23.
 //

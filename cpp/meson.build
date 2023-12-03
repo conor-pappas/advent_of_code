@@ -8,3 +8,4 @@ project(
 
 executable('trebuchet', ['src/2023/01/trebuchet.cpp'])
 executable('cube', ['src/2023/02/cube.cpp'])
+executable('gear_ratio', ['src/2023/03/gear_ratio.cpp'])
