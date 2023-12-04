@@ -8,7 +8,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <regex>
 #include <algorithm>
 #include <ranges>
 #include <unordered_set>
@@ -97,24 +96,36 @@ PointSet point_adjacencies(const Plane& plane, const PointSet& points) {
     return result;
 }
 
-struct PartNumber {
-    PointSet points;
+class PartNumber {
+public:
+    const PointSet points;
+    const Point startingPoint;
+    const Point endingPoint;
+    const int value;
 
-    [[nodiscard]] Point startingPoint() const {
+    explicit PartNumber(PointSet  points):
+        points(std::move(points)),
+        startingPoint(calculateStartingPoint()),
+        endingPoint(calculateEndingPoint()),
+        value(calculateValue())
+    {}
+
+private:
+    [[nodiscard]] Point calculateStartingPoint() const {
         auto comp = [](const Point a, const Point b) { return a.x < b.x; };
         return *ranges::min_element(points, comp);
     }
 
-    [[nodiscard]] Point endingPoint() const {
+    [[nodiscard]] Point calculateEndingPoint() const {
         auto comp = [](const Point a, const Point b) { return a.x < b.x; };
         return *ranges::max_element(points, comp);
     }
 
-    [[nodiscard]] double value() const {
-        double result = 0;
-        const int ending_x = endingPoint().x;
+    [[nodiscard]] int calculateValue() const {
+        int result = 0;
+        const int ending_x = endingPoint.x;
         for (const auto& point : points) {
-            const auto exponent = pow(10, (ending_x - point.x));
+            const int exponent = static_cast<int>(pow(10, (ending_x - point.x)));
             result += (point.character - '0') * exponent;
         }
         return result;
@@ -125,16 +136,26 @@ struct Symbol {
     const Point point;
 };
 
+class Gear {
+public:
+    const Symbol symbol;
+    const PartNumber partNumber_1;
+    const PartNumber partNumber_2;
+
+    [[nodiscard]] int ratio() const {
+        return partNumber_1.value * partNumber_2.value;
+    }
+};
 
 class Grid {
 public:
     const Plane plane;
     const vector<Symbol> symbols;
     const vector<PartNumber> partNumbers;
-    PointMap<const PartNumber*> partNumberMap;
-    PointMap<const Symbol*> symbolMap;
+    PointMap<const PartNumber*> partNumberLookup;
+    PointMap<const Symbol*> symbolLookup;
 
-    Grid(Plane  plane, const vector<Symbol>& symbols, const vector<PartNumber>& partNumbers):
+    Grid(Plane plane, const vector<Symbol>& symbols, const vector<PartNumber>& partNumbers):
         plane(std::move(plane)),
         symbols(symbols),
         partNumbers(partNumbers)
@@ -143,25 +164,18 @@ public:
         buildSymbolMap();
     }
 
-    [[nodiscard]] const PartNumber* partNumberAt(const Point& point) const {
-        return partNumberMap.at(point);
-    }
-
-    [[nodiscard]] const Symbol* symbolAt(const Point& point) const {
-        return symbolMap.at(point);
-    }
-
+private:
     void buildPartNumberMap() {
         for (const auto& partNumber : partNumbers) {
             for (const auto& point : partNumber.points) {
-                partNumberMap[point] = &partNumber;
+                partNumberLookup[point] = &partNumber;
             }
         }
     }
 
     void buildSymbolMap() {
         for (const auto& symbol : symbols) {
-            symbolMap[symbol.point] = &symbol;
+            symbolLookup[symbol.point] = &symbol;
         }
     }
 };
@@ -184,15 +198,15 @@ Plane parsePlane(const vector<string>& lines) {
 
 vector<PartNumber> parsePartNumbers(const Plane& plane) {
     vector<PartNumber> result;
-    PartNumber currentPartNumber;
+    PointSet currentPoints;
     for (const auto& row : plane) {
         for (const auto& point : row) {
             const auto& character = point.character;
             if(isDigit(character)) {
-                currentPartNumber.points.insert(point);
-            } else if(!currentPartNumber.points.empty()) {
-                result.push_back(currentPartNumber);
-                currentPartNumber = PartNumber();
+                currentPoints.insert(point);
+            } else if(!currentPoints.empty()) {
+                result.emplace_back(currentPoints);
+                currentPoints = PointSet();
             }
         }
     }
@@ -221,15 +235,60 @@ Grid& parseGrid(const vector<string>& lines) {
 
 auto find_valid_part_numbers(const Grid& grid) {
     const auto isSymbol = [&grid](const Point& point) {
-        return grid.symbolMap.contains(point);
+        return grid.symbolLookup.contains(point);
     };
     const auto validPartNumber = [&grid, isSymbol](const PartNumber& partNumber) {
-        auto adjacencies = point_adjacencies(grid.plane, partNumber.points);
+        const auto adjacencies = point_adjacencies(grid.plane, partNumber.points);
         return ranges::any_of( adjacencies, isSymbol);
     };
     return grid.partNumbers | views::filter(validPartNumber);
 }
 
+class GearFinder {
+public:
+    Grid grid;
+
+    explicit GearFinder(Grid grid):
+        grid(std::move(grid))
+    {}
+
+    [[nodiscard]] vector<const Gear> findGears() const {
+        vector<const Gear> result;
+        for (const auto& symbol : grid.symbols) {
+            if (const auto partNumbers = adjacentPartNumbers(symbol); partNumbers.size() == 2) {
+                result.push_back({symbol, partNumbers[0], partNumbers[1]});
+            }
+        }
+        return result;
+    }
+
+private:
+    [[nodiscard]] PartNumber getPartNumber(const Point& point) const {
+        return *grid.partNumberLookup.at(point);
+    }
+
+    [[nodiscard]] bool isPartNumber(const Point& point) const {
+        return grid.partNumberLookup.contains(point);
+    }
+
+    [[nodiscard]] vector<const PartNumber> adjacentPartNumbers(const Symbol& symbol) const {
+        PointSet locations;
+        for (const auto& point :  point_adjacencies(grid.plane, symbol.point)) {
+            if (isPartNumber(point)) {
+                auto partNumber = getPartNumber(point);
+                locations.insert(partNumber.startingPoint);
+            }
+        }
+        vector<const PartNumber> partNumbers;
+        for (const auto& location : locations) {
+            partNumbers.push_back(getPartNumber(location));
+        }
+        return partNumbers;
+    }
+};
+
+vector<const Gear> findGears(const Grid& grid) {
+    return GearFinder(grid).findGears();
 }
 
 void printGrid(const Grid& grid) {
@@ -242,7 +301,7 @@ void printGrid(const Grid& grid) {
     }
     cout << "Part Numbers:" << endl;
     for (const auto& partNumber : grid.partNumbers) {
-        cout << partNumber.value() << ", ";
+        cout << partNumber.value << ", ";
     }
     cout << endl << "Symbols:" << endl;
     for (const auto& symbol : grid.symbols) {
@@ -251,10 +310,18 @@ void printGrid(const Grid& grid) {
     cout << endl;
 }
 
-double part_1(const Grid& grid) {
-    double sum = 0;
+int part_1(const Grid& grid) {
+    int sum = 0;
     for (const auto& partNumber : find_valid_part_numbers(grid)) {
-        sum += partNumber.value();
+        sum += partNumber.value;
+    }
+    return sum;
+}
+
+int part_2(const Grid& grid) {
+    int sum = 0;
+    for (const auto& gear : findGears(grid)) {
+        sum += gear.ratio();
     }
     return sum;
 }
@@ -266,5 +333,5 @@ int main(int argc, char** argv) {
     const Grid grid = parseGrid(lines);
     printGrid(grid);
 
-    cout << part_1(grid) << endl;
+    cout << part_2(grid) << endl;
 }
