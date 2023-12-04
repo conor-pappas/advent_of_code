@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const string INPUT_DIR = "/Users/conorpappas/current/advent_of_code/cpp/data/2023/01/";
+const string INPUT_DIR = "/Users/conorpappas/current/advent_of_code/cpp/2023/src/01/data/";
 
 #define REPLACE_TEXT true
 

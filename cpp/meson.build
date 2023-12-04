@@ -6,6 +6,6 @@ project(
   default_options: ['cpp_std=c++23', 'warning_level=3']
 )
 
-executable('trebuchet', ['src/2023/01/trebuchet.cpp'])
-executable('cube', ['src/2023/02/cube.cpp'])
-executable('gear_ratio', ['src/2023/03/gear_ratio.cpp'])
+executable('trebuchet', ['2023/src/01/src/trebuchet.cpp'])
+executable('cube', ['2023/src/02/src/cube.cpp'])
+executable('gear_ratio', ['2023/src/03/src/gear_ratio.cpp'])

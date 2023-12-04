@@ -17,7 +17,7 @@
 
 using namespace std;
 
-const string INPUT_DIR = "/Users/conorpappas/current/advent_of_code/cpp/data/2023/03/";
+const string INPUT_DIR = "/Users/conorpappas/current/advent_of_code/cpp/2023/src/03/data/";
 
 // TODO: Move to lib
 vector<string> readFile(const string& fileName) {
