@@ -10,7 +10,11 @@
 #include <vector>
 #include <regex>
 #include <algorithm>
+#include <ranges>
 #include <unordered_set>
+#include <unordered_map>
+#include <numeric>
+#include <optional>
 
 using namespace std;
 
@@ -54,21 +58,47 @@ struct Point {
         }
     };
 };
-constexpr Point INVALID_POINT = Point{-1, -1, ' '};
-
-
 
 typedef unordered_set<Point, Point::Hasher> PointSet;
 typedef vector<vector<Point>> Plane;
+template <typename T>
+using PointMap = unordered_map<Point, T, Point::Hasher>;
 
-Point readPoint(const Plane& plane, const int x, const int y) {
-    if (y < 0 || y >= plane.size()) return INVALID_POINT;
-    if (x < 0 || x >= plane[y].size()) return INVALID_POINT;
-    return plane[y][x];
+optional<const Point> readPoint(const Plane& plane, const int x, const int y) {
+    if (y < 0 || y >= plane.size()) return {};
+    if (x < 0 || x >= plane[y].size()) return {};
+    return make_optional<const Point>(plane[y][x]);
+}
+
+PointSet point_adjacencies(const Plane& plane, const Point point) {
+    PointSet result;
+    auto add_point = [&](const int x, const int y) {
+        if(auto const found_point = readPoint(plane, x, y)) {
+            result.insert(found_point.value());
+        }
+    };
+    add_point(point.x - 1, point.y - 1);
+    add_point(point.x, point.y - 1);
+    add_point(point.x + 1, point.y - 1);
+    add_point(point.x - 1, point.y);
+    add_point(point.x + 1, point.y);
+    add_point(point.x - 1, point.y + 1);
+    add_point(point.x, point.y + 1);
+    add_point(point.x + 1, point.y + 1);
+
+    return result;
+}
+
+PointSet point_adjacencies(const Plane& plane, const PointSet& points) {
+    PointSet result;
+    for (const auto& point : points) {
+        result.merge(point_adjacencies(plane, point));
+    }
+    return result;
 }
 
 struct PartNumber {
-    vector<Point> points;
+    PointSet points;
 
     [[nodiscard]] Point startingPoint() const {
         auto comp = [](const Point a, const Point b) { return a.x < b.x; };
@@ -89,31 +119,51 @@ struct PartNumber {
         }
         return result;
     }
-
-    [[nodiscard]] PointSet adjacencies(const Plane& plane) const {
-        PointSet result;
-        for (const auto& point : points) {
-            result.insert(readPoint(plane, point.x - 1, point.y - 1));
-            result.insert(readPoint(plane, point.x, point.y - 1));
-            result.insert(readPoint(plane, point.x + 1, point.y - 1));
-            result.insert(readPoint(plane, point.x - 1, point.y));
-            result.insert(readPoint(plane, point.x + 1, point.y));
-            result.insert(readPoint(plane, point.x - 1, point.y + 1));
-            result.insert(readPoint(plane, point.x, point.y + 1));
-            result.insert(readPoint(plane, point.x + 1, point.y + 1));
-        }
-        return result;
-    }
 };
 
 struct Symbol {
     const Point point;
 };
 
-struct Grid {
-    Plane plane;
-    vector<Symbol> symbols;
-    vector<PartNumber> partNumbers;
+
+class Grid {
+public:
+    const Plane plane;
+    const vector<Symbol> symbols;
+    const vector<PartNumber> partNumbers;
+    PointMap<const PartNumber*> partNumberMap;
+    PointMap<const Symbol*> symbolMap;
+
+    Grid(Plane  plane, const vector<Symbol>& symbols, const vector<PartNumber>& partNumbers):
+        plane(std::move(plane)),
+        symbols(symbols),
+        partNumbers(partNumbers)
+    {
+        buildPartNumberMap();
+        buildSymbolMap();
+    }
+
+    [[nodiscard]] const PartNumber* partNumberAt(const Point& point) const {
+        return partNumberMap.at(point);
+    }
+
+    [[nodiscard]] const Symbol* symbolAt(const Point& point) const {
+        return symbolMap.at(point);
+    }
+
+    void buildPartNumberMap() {
+        for (const auto& partNumber : partNumbers) {
+            for (const auto& point : partNumber.points) {
+                partNumberMap[point] = &partNumber;
+            }
+        }
+    }
+
+    void buildSymbolMap() {
+        for (const auto& symbol : symbols) {
+            symbolMap[symbol.point] = &symbol;
+        }
+    }
 };
 
 constexpr char EMPTY_CHARACTER = '.';
@@ -139,7 +189,7 @@ vector<PartNumber> parsePartNumbers(const Plane& plane) {
         for (const auto& point : row) {
             const auto& character = point.character;
             if(isDigit(character)) {
-                currentPartNumber.points.push_back(point);
+                currentPartNumber.points.insert(point);
             } else if(!currentPartNumber.points.empty()) {
                 result.push_back(currentPartNumber);
                 currentPartNumber = PartNumber();
@@ -169,22 +219,17 @@ Grid& parseGrid(const vector<string>& lines) {
     return *new Grid{plane, symbols, partNumbers};
 }
 
-vector<const PartNumber*> find_valid_part_numbers(const Grid& grid) {
-    PointSet symbolPoints;
-    for (const Symbol symbol : grid.symbols) {
-        symbolPoints.insert(symbol.point);
-    }
+auto find_valid_part_numbers(const Grid& grid) {
+    const auto isSymbol = [&grid](const Point& point) {
+        return grid.symbolMap.contains(point);
+    };
+    const auto validPartNumber = [&grid, isSymbol](const PartNumber& partNumber) {
+        auto adjacencies = point_adjacencies(grid.plane, partNumber.points);
+        return ranges::any_of( adjacencies, isSymbol);
+    };
+    return grid.partNumbers | views::filter(validPartNumber);
+}
 
-    vector<const PartNumber*> validPartNumbers;
-    for (const auto& partNumber : grid.partNumbers) {
-        for (const auto& adjacency : partNumber.adjacencies(grid.plane)) {
-            if (symbolPoints.contains(adjacency)) {
-                validPartNumbers.push_back(&partNumber);
-                break;
-            }
-        }
-    }
-    return validPartNumbers;
 }
 
 void printGrid(const Grid& grid) {
@@ -207,10 +252,9 @@ void printGrid(const Grid& grid) {
 }
 
 double part_1(const Grid& grid) {
-    const auto validPartNumbers = find_valid_part_numbers(grid);
     double sum = 0;
-    for (const auto& partNumber : validPartNumbers) {
-        sum += partNumber->value();
+    for (const auto& partNumber : find_valid_part_numbers(grid)) {
+        sum += partNumber.value();
     }
     return sum;
 }
