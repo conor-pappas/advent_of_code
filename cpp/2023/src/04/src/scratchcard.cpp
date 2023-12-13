@@ -1,5 +1,5 @@
 //
-// Day 3: Scratchcards
+// Day 4: Scratchcards
 // https://adventofcode.com/2023/day/4
 //
 // Created by Conor Pappas on 12/4/23.

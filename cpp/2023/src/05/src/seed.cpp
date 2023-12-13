@@ -1,19 +1,17 @@
 //
-// Day 3: Scratchcards
-// https://adventofcode.com/2023/day/4
+// Day 5: If You Give A Seed A Fertilizer
+// https://adventofcode.com/2023/day/5
 //
 // Created by Conor Pappas on 12/4/23.
 //
 
-#include <iostream>
 #include <fstream>
+#include <string>
 #include <vector>
-#include <regex>
 #include <ranges>
-#include <algorithm>
-#include <unordered_map>
-#include <cassert>
-#include <set>
+#include <regex>
+
+#include "almanac.hpp"
 
 using namespace std;
 
@@ -42,153 +40,9 @@ auto split(const string& str, char delim) {
         });
 }
 
-// TODO: Split into multiple files
-
-using Category = string;
-
-struct Descriptor {
-    Category category;
-    long value;
-
-    friend ostream& operator<<(ostream& os, const Descriptor& d) {
-        return os << d.category << ":" << d.value;
-    };
-};
-
-class DescriptorRange {
-public:
-    DescriptorRange(Descriptor range_start, const long size):
-        _range_start(std::move(range_start)),
-        _size(size) {
-        assert(size > 0);
-    };
-
-    [[nodiscard]] long start() const { return _range_start.value; }
-    [[nodiscard]] long end() const { return _range_start.value + size() - 1; }
-    [[nodiscard]] Category category() const { return _range_start.category; }
-    [[nodiscard]] bool empty() const { return size() == 0;}
-    [[nodiscard]] long size() const { return _size; }
-
-    [[nodiscard]] DescriptorRange intersect(const DescriptorRange& other) const {
-        assert(other.category() == category());
-        const long range_start = max(start(), other.start());
-        const long range_end = min(end(), other.end());
-        const long range_size = range_end - range_start + 1;
-        return DescriptorRange({category(), range_start}, range_size);
-    }
-
-    [[nodiscard]] bool in_range(const Descriptor& input) const {
-        assert(input.category == category());
-        return input.value >= start() && input.value <= end();
-    }
-
-    friend ostream& operator<<(ostream& os, const DescriptorRange& d) {
-        return os << d.category() << "(" << d.start() << "-" << d.end() << ")";
-    };
-private:
-    Descriptor _range_start;
-    long _size;
-};
-
-class DescriptorRangeTransform {
-public:
-    DescriptorRange domain_range;
-    DescriptorRange image_range;
-
-    DescriptorRangeTransform(DescriptorRange domain_range, DescriptorRange image_range):
-        domain_range(std::move(domain_range)),
-        image_range(std::move(image_range)) {
-        assert(domain_range.category() == image_range.category());
-        assert(domain_range.size() == image_range.size());
-    };
-
-    [[nodiscard]] long offset() const {
-        return image_range.start() - domain_range.start();
-    }
-
-    Descriptor operator()(const Descriptor& input) const {
-        assert(in_range(input));
-        return Descriptor{image_range.category(), input.value + offset()};
-    }
-
-    DescriptorRange operator()(const DescriptorRange& input) const {
-        const auto intersection = domain_range.intersect(input);
-        return { {intersection.category(), intersection.start()}, intersection.size() };
-    }
-
-    [[nodiscard]] bool in_range(const Descriptor& input) const {
-        return domain_range.in_range(input);
-    }
-
-    friend ostream& operator<<(ostream& os, const DescriptorRangeTransform& d) {
-        return os << d.domain_range << " -> " << d.image_range;
-    }
-};
-
-class DescriptorSet {
-public:
-    void insert(const DescriptorRange& other) {
-        if(other.empty()) { return; }
-        // TODO: assert that other is not a subset of any existing range
-        ranges.insert(other);
-    }
-
-    void insert(const DescriptorSet& other) {
-        ranges.insert(other.ranges.begin(), other.ranges.end());
-    }
-private:
-    struct DescriptorRangeCompare {
-        bool operator() (const DescriptorRange& lhs, const DescriptorRange& rhs) const {
-            return lhs.end() < rhs.start();
-        }
-    };
-    set<DescriptorRange, DescriptorRangeCompare> ranges;
-};
-
-class DescriptorSetTransform {
-public:
-    void add(const DescriptorRangeTransform& transform) {
-        assert(transform.domain_range.category() == _domain_category);
-        assert(transform.image_range.category() == _image_category);
-        transforms.push_back(transform);
-    }
-
-    DescriptorSetTransform(Category domain_category, Category image_category):
-        _domain_category(std::move(domain_category)),
-        _image_category(std::move(image_category))
-    {}
-
-    [[nodiscard]] Category domain_category() const { return _domain_category; }
-    [[nodiscard]] Category image_category() const { return _image_category; }
-
-    Descriptor operator()(const Descriptor& input) const {
-        auto result = transforms
-            | views::filter([&](const auto& transform) { return transform.in_range(input); })
-            | views::transform([&](const auto& transform) { return transform(input); });
-        if (result.empty()) {
-            return {_image_category, input.value};
-        } else {
-            assert(distance(result.begin(), result.end()) == 1);
-            return *result.begin();
-        }
-    }
-
-    DescriptorSet operator()(const DescriptorRange& input) const {
-        DescriptorSet result;
-        for (const auto& transform : transforms) {
-            result.insert(transform(input));
-        }
-        return result;
-    }
-private:
-    Category _domain_category;
-    Category _image_category;
-    vector<DescriptorRangeTransform> transforms{};
-};
-
 const regex SEED_FORMAT = regex(R"(seeds: (\d+( \d+)*))");
 
-vector<Descriptor> parseSeeds(const string& line) {
+vector<Descriptor> parse_seeds(const string& line) {
     vector<Descriptor> descriptors;
     smatch match;
     if (regex_match(line, match, SEED_FORMAT)) {
@@ -201,11 +55,20 @@ vector<Descriptor> parseSeeds(const string& line) {
     return descriptors;
 }
 
+DescriptorSet parse_seeds_set(const string& line) {
+    const vector<Descriptor> seeds = parse_seeds(line);
+    DescriptorSet descriptor_set("seed");
+    for (size_t i = 0; i < seeds.size(); i += 2) {
+        const DescriptorRange seed_range = {seeds[i], seeds[i+1].value};
+        descriptor_set.insert(seed_range);
+    }
+    return descriptor_set;
+}
+
 const regex DESCRIPTOR_TRANSFORM_HEADER_FORMAT = regex(R"((\w+)-to-(\w+) map:)");
 const regex DESCRIPTOR_TRANSFORM_MAP_FORMAT = regex(R"((\d+) (\d+) (\d+))");
 
-
-DescriptorSetTransform parseDescriptorSetTransform(span<string> lines) {
+DescriptorSetTransform parse_descriptor_set_transform(span<string> lines) {
     string header = lines[0];
     smatch headerMatch;
     if (!regex_search(header, headerMatch, DESCRIPTOR_TRANSFORM_HEADER_FORMAT)) {
@@ -231,9 +94,7 @@ DescriptorSetTransform parseDescriptorSetTransform(span<string> lines) {
     return transform_index;
 }
 
-using Almanac = unordered_map<Category, DescriptorSetTransform>;
-
-Almanac parseAlmanac(const span<string>& lines) {
+Almanac parse_almanac(const span<string>& lines) {
     Almanac almanac;
 
     vector<string> mapLines;
@@ -241,16 +102,16 @@ Almanac parseAlmanac(const span<string>& lines) {
         smatch headerMatch;
         const bool header = regex_search(curLine, headerMatch, DESCRIPTOR_TRANSFORM_HEADER_FORMAT);
         if(header && !mapLines.empty()) {
-            const auto transformIndex = parseDescriptorSetTransform(mapLines);
-            almanac.insert({transformIndex.domain_category(), transformIndex});
+            const auto transformIndex = parse_descriptor_set_transform(mapLines);
+            almanac.transform_sets.insert({transformIndex.domain_category(), transformIndex});
             mapLines.clear();
         }
         if(!curLine.empty()) {
             mapLines.push_back(curLine);
         }
     }
-    const auto transformIndex = parseDescriptorSetTransform(mapLines);
-    almanac.insert({transformIndex.domain_category(), transformIndex});
+    const auto transformIndex = parse_descriptor_set_transform(mapLines);
+    almanac.transform_sets.insert({transformIndex.domain_category(), transformIndex});
     return almanac;
 }
 
@@ -260,7 +121,7 @@ long part_1(const vector<Descriptor>& seeds, const Almanac& almanac) {
     for (auto const &seed : seeds) {
         Descriptor seed_result = seed;
         while(seed_result.category != "location") {
-            const auto& transform = almanac.at(seed_result.category);
+            const auto& transform = almanac.transform_sets.at(seed_result.category);
             const auto new_seed_result = transform(seed_result);
             seed_result = new_seed_result;
         }
@@ -270,16 +131,25 @@ long part_1(const vector<Descriptor>& seeds, const Almanac& almanac) {
     return *seed_locations.begin();
 }
 
-int part_2() {
+long part_2(const DescriptorSet& seed_set, const Almanac& almanac) {
+    const DescriptorSet locations = almanac(seed_set, "location");
+    vector<long> location_starts;
+    for (const auto& location_range : locations.ranges()) {
+        location_starts.push_back(location_range.start());
+    }
+    return *ranges::min_element(location_starts);
 }
 
-int main(int argc, char** argv) {
+int main(const int argc, char** argv) {
     const string filename = argc > 1 ? argv[1] : "input.txt";
     vector<string> lines = readFile(INPUT_DIR + filename);
     const span<string> lines_span = lines;
 
-    const auto seeds = parseSeeds(lines_span[0]);
-    const auto almanac = parseAlmanac(lines_span.subspan(1));
+    const vector<Descriptor> seeds = parse_seeds(lines_span[0]);
+    const DescriptorSet seeds_set = parse_seeds_set(lines_span[0]);
+    const auto almanac = parse_almanac(lines_span.subspan(1));
 
-    cout << part_1(seeds, almanac) << endl;
+    // cout << almanac << endl;
+    cout << "Part 1: " << part_1(seeds, almanac) << endl;
+    cout << "Part 2: " << part_2(seeds_set, almanac) << endl;
 }
