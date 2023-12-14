@@ -2,7 +2,7 @@
 // Day 6: Wait for it
 // https://adventofcode.com/2023/day/6
 //
-// Created by Conor Pappas on 12/4/23.
+// Created by Conor Pappas on 12/13/23.
 //
 
 #include <cassert>
