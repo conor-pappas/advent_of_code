@@ -30,6 +30,7 @@ namespace camel {
 
         CardBuffer cards{};
         bid_t bid {};
+        bool wild_jokers = false;
 
         [[nodiscard]] Type type() const;
 

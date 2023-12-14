@@ -13,7 +13,6 @@
 #include <ranges>
 #include <iostream>
 #include <regex>
-#include <set>
 
 #include "hand.hpp"
 
@@ -67,7 +66,7 @@ vector<Hand> parse_hands(const span<string> lines) {
             assert(hand_string.size() == Hand::HAND_SIZE);
 
             Hand hand;
-            for (int i = 0; i <Hand::HAND_SIZE; i++) {
+            for (size_t i = 0; i < Hand::HAND_SIZE; i++) {
                 hand.cards[i] = Card(hand_string[i]);
             }
             hand.bid = stol(bid_string);
@@ -81,19 +80,25 @@ vector<Hand> parse_hands(const span<string> lines) {
     return hands;
 }
 
-Hand::bid_t part_1(vector<Hand>& hands) {
-    ranges::sort(hands);
-
+Hand::bid_t calculate_bid(const vector<Hand>& hands) {
     Hand::bid_t total_bid = 0;
     for (int i = 0; i < hands.size(); i++) {
+        cout << hands[i] << endl;
         total_bid += hands[i].bid * (i + 1);
     }
 
     return total_bid;
 }
 
-int part_2() {
-    return 1;
+Hand::bid_t part_1(vector<Hand>& hands) {
+    ranges::sort(hands);
+    return calculate_bid((hands));
+}
+
+Hand::bid_t part_2(vector<Hand>& hands) {
+    for (auto& hand: hands) { hand.wild_jokers = true; }
+    ranges::sort(hands);
+    return calculate_bid(hands);
 }
 
 int main(const int argc, char** argv) {
@@ -103,6 +108,6 @@ int main(const int argc, char** argv) {
 
     vector<Hand> hands = parse_hands(lines_span);
 
-    cout << "Part 1: " << part_1(hands) << endl;
-    cout << "Part 2: " << part_2() << endl;
+    // cout << "Part 1: " << part_1(hands) << endl;
+    cout << "Part 2: " << endl << part_2(hands) << endl;
 }
