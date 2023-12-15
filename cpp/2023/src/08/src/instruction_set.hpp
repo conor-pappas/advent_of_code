@@ -8,17 +8,17 @@
 #include <ostream>
 
 #include "instruction.hpp"
-#include "cyclic_iterator.hpp"
+#include "cycles/cyclic_iterator.hpp"
 
 namespace wasteland {
     class InstructionSet {
     public:
-        using container_type = std::vector<Instruction>;
-        using iterator = CyclicIterator<Instruction, std::vector<Instruction>::iterator>;
+        using container_type = std::vector<const Instruction>;
+        using iterator = CyclicIterator<container_type::iterator>;
 
         explicit InstructionSet(container_type  instructions);
 
-        iterator begin();
+        [[nodiscard]] iterator begin() const;
 
         friend std::ostream& operator<<(std::ostream& os, const InstructionSet& instruction_set);
 

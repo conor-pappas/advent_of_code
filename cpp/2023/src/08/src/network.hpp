@@ -15,21 +15,25 @@ namespace wasteland {
         class Node;
         class TraversalIterator;
         using Label = std::string;
+        using NodeMap = std::unordered_map<Label, Node>;
+
+        [[nodiscard]] const NodeMap& get_nodes() const;
 
         Node& add_node(const Label&, const Label& left, const Label& right);
-        const Node& get_node(const Label&);
-        const Node& traverse(const Node& node, const Instruction&);
-        const Node& traverse(const Label&, const Instruction&);
+        [[nodiscard]] const Node& get_node(const Label&) const;
+        [[nodiscard]] const Node& traverse(const Node& node, const Instruction&) const;
+        [[nodiscard]] const Node& traverse(const Label&, const Instruction&) const;
 
-        TraversalIterator traverse(const Node&, InstructionSet&);
-        TraversalIterator traverse(const Label&, InstructionSet&);
+        // TODO: should be const, but we are passing a network ref to the iterator.
+        [[nodiscard]] TraversalIterator traverse(const Node&, const InstructionSet&);
+        [[nodiscard]] TraversalIterator traverse(const Label&, const InstructionSet&) ;
 
-        bool operator==(const Network&) const;
+        [[nodiscard]] bool operator==(const Network&) const;
 
         friend std::ostream &operator<<(std::ostream&, const Network&);
 
     private:
-        std::unordered_map<Label, Node> nodes {};
+        NodeMap nodes {};
     };
 
     class Network::Node {
@@ -46,25 +50,34 @@ namespace wasteland {
 
     // TODO: Make an input_iterator and fix const-correctness. Network::traverse() should return a const_iterator.
     class Network::TraversalIterator {
+    public:
         using iterator_category = std::forward_iterator_tag;
-        using difference_type   = size_t;
+        using difference_type   = ptrdiff_t;
         using value_type        = const Node;
         using pointer           = value_type*;
         using reference         = value_type&;
 
-    public:
-        TraversalIterator(const Node& current_node, Network& network, InstructionSet& instructions);
+        TraversalIterator();
+        TraversalIterator(const Node& current_node, Network& network, const InstructionSet& instructions);
 
-        bool operator==(const TraversalIterator& other) const;
-        bool operator!=(const TraversalIterator& other) const;
-        reference operator*() const;
-        pointer operator->() const;
+        [[nodiscard]] Instruction get_instruction() const;
+
+        [[nodiscard]] bool operator==(const TraversalIterator& other) const;
+        [[nodiscard]] bool operator!=(const TraversalIterator& other) const;
+        [[nodiscard]] reference operator*() const;
+        [[nodiscard]] pointer operator->() const;
         TraversalIterator& operator++();
         TraversalIterator operator++(int) &;
 
+        friend std::ostream& operator<<(std::ostream& os, const TraversalIterator& iterator) {
+            const char instruction = static_cast<char>(*iterator.instruction);
+            os << "TraversalIterator(" << *iterator.current_node << ", " << instruction << ")";
+            return os;
+        }
+
     private:
-        pointer current_node;
-        Network& network;
-        InstructionSet::iterator instruction;
+        pointer current_node {};
+        Network* network {};
+        InstructionSet::iterator instruction {};
     };
 };

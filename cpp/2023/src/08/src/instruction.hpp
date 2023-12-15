@@ -15,6 +15,8 @@ namespace wasteland {
         explicit Instruction(const char&);
         explicit operator char() const;
 
+        bool operator==(const Instruction&) const;
+
         [[nodiscard]] Direction get_direction() const;
 
     private:

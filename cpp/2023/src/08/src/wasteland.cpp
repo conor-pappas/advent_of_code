@@ -10,9 +10,11 @@
 #include <ranges>
 #include <iostream>
 #include <regex>
+#include <__numeric/gcd_lcm.h>
 
 #include "network.hpp"
 #include "instruction_set.hpp"
+#include "cycles/cycle_finder.hpp"
 
 using namespace std;
 using namespace wasteland;
@@ -37,7 +39,7 @@ vector<string> readFile(const string& fileName) {
 vector<string> split(const string& str, const char& delim) {
     vector<string> strings;
     string current_string;
-    auto push = [&]() {
+    auto push = [&] {
         if(!current_string.empty()) { strings.push_back(current_string); }
         current_string.clear();
     };
@@ -56,7 +58,7 @@ InstructionSet parse_instructions(const string& line) {
     smatch match;
     if (regex_match(line, match, INSTRUCTION_REGEX)) {
         const string instructions_string = match[1].str();
-        const vector<Instruction> instructions(instructions_string.begin(), instructions_string.end());
+        const vector<const Instruction> instructions(instructions_string.begin(), instructions_string.end());
         return InstructionSet(instructions);
     }
     throw runtime_error("Could not parse instructions");
@@ -79,7 +81,7 @@ Network parse_network(const span<string>& lines) {
 const Network::Label START_LABEL = "AAA";
 const Network::Label END_LABEL = "ZZZ";
 
-size_t part_1(Network& network, InstructionSet& instructions) {
+size_t part_1(Network& network, const InstructionSet& instructions) {
     size_t distance = 0;
     auto iterator = network.traverse(START_LABEL, instructions);
     while(iterator->label != END_LABEL) {
@@ -89,8 +91,55 @@ size_t part_1(Network& network, InstructionSet& instructions) {
     return distance;
 }
 
-int part_2() {
-    return 0;
+constexpr char START_SUFFIX = 'A';
+constexpr char END_SUFFIX = 'Z';
+
+using cycle_finder = CycleFinder<Network::TraversalIterator>;
+using Cycle = cycle_finder::Cycle;
+
+size_t lcm(const vector<size_t>& numbers) {
+    size_t lcm = 1;
+    for (const auto& number: numbers) {
+        lcm = std::lcm(lcm, number);
+    }
+    return lcm;
+}
+
+size_t part_2(Network& network, const InstructionSet& instructions) {
+    // TODO: Can't be const b/c we don't have const CyclicIterator
+     auto cycles = network.get_nodes()
+        | std::views::filter([](const auto& node) { return node.first.back() == START_SUFFIX; })
+        | std::views::transform([&](const auto& node) {
+            auto cycle = cycle_finder::find(network.traverse(node.second, instructions));
+            assert(cycle.has_value());
+            return cycle.value();
+        });
+
+    // TODO: would be much easier if clang had support for ranges::enumerate. I could just impl myself I guess.
+    // TODO: We are making assumptions about our data here which I'd love to come back and fix:
+    // 1) That there is only one end_node per cycle. We should be running calculations for each combination of end nodes.
+    // 2) That the tail, when overlayed on the loop, has the start_node right after the end_node.
+    //    The data happens to fit this (likely intentionally), but the full solution for this should involve a CRT calculation.
+    vector<size_t> cycle_lengths;
+    for (const auto& cycle: cycles) {
+        int end_node_count = 0;
+        int index = 0;
+        int end_index = 0;
+        for (const auto& node: cycle.loop) {
+            if (node.label.back() == END_SUFFIX) {
+                ++end_node_count;
+                end_index = index;
+            }
+            ++index;
+        }
+        assert(end_node_count == 1);
+        const size_t total_offset = (end_index + cycle.tail_length) % cycle.cycle_length;
+        assert(total_offset == 0);
+
+        cycle_lengths.push_back(cycle.cycle_length);
+    }
+
+    return lcm(cycle_lengths);
 }
 
 int main(const int argc, char** argv) {
@@ -98,11 +147,10 @@ int main(const int argc, char** argv) {
     vector<string> lines = readFile(INPUT_DIR + filename);
     const span lines_span = lines;
 
-    InstructionSet instructions = parse_instructions(lines_span[0]);
+    const InstructionSet instructions = parse_instructions(lines_span[0]);
     Network network = parse_network(lines_span.subspan(1));
 
-    const Network::Label start_label = "AAA";
 
     cout << "Part 1: " << part_1(network, instructions) << endl;
-    cout << "Part 2: " << part_2() << endl;
+    cout << "Part 2: " << endl << part_2(network, instructions) << endl;
 }

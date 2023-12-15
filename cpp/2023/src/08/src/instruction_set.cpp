@@ -9,7 +9,7 @@
 wasteland::InstructionSet::InstructionSet(container_type  instructions):
     instructions(std::move(instructions)) {}
 
-wasteland::InstructionSet::iterator wasteland::InstructionSet::begin() {
+wasteland::InstructionSet::iterator wasteland::InstructionSet::begin() const {
     return { instructions.begin(), instructions.end() };
 }
 
