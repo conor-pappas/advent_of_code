@@ -13,6 +13,7 @@
 namespace wasteland {
     class InstructionSet {
     public:
+        // TODO: const vectors not right? Was trying g++ and makes sense you can't have const vector.
         using container_type = std::vector<const Instruction>;
         using iterator = support::CyclicIterator<container_type::iterator>;
 

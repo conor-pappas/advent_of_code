@@ -10,7 +10,7 @@
 #include <ranges>
 #include <iostream>
 #include <regex>
-#include <__numeric/gcd_lcm.h>
+#include <numeric>
 
 #include "network.hpp"
 #include "instruction_set.hpp"
@@ -20,22 +20,6 @@
 
 using namespace std;
 using namespace wasteland;
-
-// FIXME: why are views so awful?
-vector<string> split(const string& str, const char& delim) {
-    vector<string> strings;
-    string current_string;
-    auto push = [&] {
-        if(!current_string.empty()) { strings.push_back(current_string); }
-        current_string.clear();
-    };
-    for (const auto& c : str) {
-        if (c == delim) { push(); }
-        else {  current_string.push_back(c); }
-    }
-    push();
-    return strings;
-}
 
 const regex INSTRUCTION_REGEX = regex(R"(([LR]*))");
 const regex NODE_REGEX = regex(R"(([\w]{3})\s*=\s*\(([\w]{3})\,\s*([\w]{3})\))");

@@ -5,6 +5,7 @@
 #include "card.hpp"
 
 #include <optional>
+#include <stdexcept>
 
 namespace camel {
     struct Card::Private {

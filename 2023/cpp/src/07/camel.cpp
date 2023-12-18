@@ -20,22 +20,6 @@
 using namespace std;
 using namespace camel;
 
-// FIXME: why are views so awful?
-vector<string> split(const string& str, const char& delim) {
-    vector<string> strings;
-    string current_string;
-    auto push = [&]() {
-        if(!current_string.empty()) { strings.push_back(current_string); }
-        current_string.clear();
-    };
-    for (const auto& c : str) {
-        if (c == delim) { push(); }
-        else {  current_string.push_back(c); }
-    }
-    push();
-    return strings;
-}
-
 const regex HAND_REGEX = regex(R"((\w{5})\s*(\d+))");
 vector<Hand> parse_hands(const span<string> lines) {
 

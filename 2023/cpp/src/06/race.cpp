@@ -17,22 +17,6 @@
 
 using namespace std;
 
-// FIXME: why are views so awful?
-vector<string> split(const string& str, const char& delim) {
-    vector<string> strings;
-    string current_string;
-    auto push = [&]() {
-        if(!current_string.empty()) { strings.push_back(current_string); }
-        current_string.clear();
-    };
-    for (const auto& c : str) {
-        if (c == delim) { push(); }
-        else {  current_string.push_back(c); }
-    }
-    push();
-    return strings;
-}
-
 using time_t = long;
 using distance_t = long;
 using speed_t = long;
@@ -59,10 +43,10 @@ vector<Record> parse_records(const span<string> lines) {
     if (!regex_match(lines[0], times_match, TIMES_REGEX)) { throw runtime_error("Invalid times"); }
     if (!regex_match(lines[1], distances_match, DISTANCES_REGEX)) { throw runtime_error("Invalid distances"); }
 
-    for (const auto& time : split(times_match[1].str(), ' ')) {
+    for (const auto& time : support::split(times_match[1].str(), ' ')) {
         times.push_back(stol(time));
     }
-    for (const auto& distance : split(distances_match[1].str(), ' ')) {
+    for (const auto& distance : support::split(distances_match[1].str(), ' ')) {
         distances.push_back(stol(distance));
     }
 
@@ -87,10 +71,10 @@ Record parse_record(const span<string>& lines) {
     if (!regex_match(lines[1], distances_match, DISTANCES_REGEX)) { throw runtime_error("Invalid distances"); }
 
     string time_str, distance_str;
-    for (const auto& time : split(times_match[1].str(), ' ')) {
+    for (const auto& time : support::split(times_match[1].str(), ' ')) {
         time_str += time;
     }
-    for (const auto& distance : split(distances_match[1].str(), ' ')) {
+    for (const auto& distance : support::split(distances_match[1].str(), ' ')) {
         distance_str += distance;
     }
 
