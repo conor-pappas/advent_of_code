@@ -8,16 +8,19 @@
 
 namespace oasis {
     class History {
+    public:
         using value_type = long;
 
-    public:
         History();
-        History(const std::vector<value_type>& values);
+        explicit History(const std::vector<value_type>& values);
 
         void add(const value_type& value);
-        const std::vector<value_type>& get_values() const;
+        [[nodiscard]] const std::vector<value_type>& get_values() const;
+        [[nodiscard]] std::size_t size() const;
+
+        friend std::ostream& operator<<(std::ostream& os, const History& history);
 
     private:
-        std::vector<value_type> values;
+        std::vector<value_type> m_values {};
     };
 };

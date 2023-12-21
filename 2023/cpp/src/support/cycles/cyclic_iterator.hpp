@@ -6,6 +6,7 @@
 
 #include <ostream>
 
+// TODO: this should be in cyclic_view.hpp and not _really_ called directly.
 namespace support {
     template <typename Iterator>
     class CyclicIterator {

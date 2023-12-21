@@ -4,13 +4,16 @@
 
 #pragma once
 
+#include <vector>
+#include <string>
 
+#include "input.hpp"
+#include "history.hpp"
 
 namespace oasis {
     class parse {
     public:
-        static std::vector<std::string> parse_input(const std::vector<std::string>& lines) {
-            return lines;
-        }
+        static std::vector<History> parse_input(const std::vector<std::string>& lines);
+        static History parse_history(const std::string& line);
     };
 };

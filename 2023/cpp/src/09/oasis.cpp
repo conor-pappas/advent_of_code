@@ -7,12 +7,24 @@
 #include <iostream>
 #include <ranges>
 
+#include "parse.hpp"
 #include "input.hpp"
+#include "interpolation/forward_difference_table.hpp"
 
 using namespace std;
+using namespace oasis;
 
-long part_1() {
-    return 0;
+long part_1(const vector<History>& histories) {
+    long result = 0;
+    for (const auto& history : histories) {
+        const auto difference_table = ForwardDifferenceTable<History::value_type>(history.get_values());
+        const auto polynomial = difference_table.getPolynomial();
+        const auto next_result = polynomial.calculate(static_cast<long>(history.size()));
+        cout << history << ": " << next_result << endl;
+        cout << polynomial << endl << endl;
+        result += next_result;
+    }
+    return result;
 }
 
 long part_2() {
@@ -23,6 +35,8 @@ int main(const int argc, const char** argv) {
     vector<string> lines = support::read_input("09", argc, argv);
     const span lines_span = lines;
 
-    cout << "Part 1: " << part_1() << endl;
-    cout << "Part 2: " << part_2() << endl;
+    const auto histories = parse::parse_input(lines);
+
+    cout << "Part 1: " << part_1(histories) << endl;
+    // cout << "Part 2: " << part_2() << endl;
 }
