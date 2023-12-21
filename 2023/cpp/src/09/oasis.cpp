@@ -20,15 +20,20 @@ long part_1(const vector<History>& histories) {
         const auto difference_table = ForwardDifferenceTable<History::value_type>(history.get_values());
         const auto polynomial = difference_table.getPolynomial();
         const auto next_result = polynomial.calculate(static_cast<long>(history.size()));
-        cout << history << ": " << next_result << endl;
-        cout << polynomial << endl << endl;
         result += next_result;
     }
     return result;
 }
 
-long part_2() {
-    return 0;
+long part_2(const vector<History>& histories) {
+    long result = 0;
+    for (const auto& history : histories) {
+        const auto difference_table = ForwardDifferenceTable<History::value_type>(history.get_values());
+        const auto polynomial = difference_table.getPolynomial();
+        const auto next_result = polynomial.calculate(-1);
+        result += next_result;
+    }
+    return result;
 }
 
 int main(const int argc, const char** argv) {
@@ -38,5 +43,5 @@ int main(const int argc, const char** argv) {
     const auto histories = parse::parse_input(lines);
 
     cout << "Part 1: " << part_1(histories) << endl;
-    // cout << "Part 2: " << part_2() << endl;
+    cout << "Part 2: " << part_2(histories) << endl;
 }
