@@ -12,7 +12,7 @@
 namespace cosmic {
     class Space {
     public:
-        using coord_type = int;
+        using coord_type = long;
         using Galaxy = support::Point<coord_type, 2>;
     private:
         using galaxy_set = std::pmr::unordered_set<Galaxy, Galaxy::Hasher>;
@@ -31,7 +31,7 @@ namespace cosmic {
         void set_height(const coord_type&);
         void add_galaxy(const Galaxy&);
 
-        void expand();
+        void expand(coord_type = 1);
 
         friend std::ostream& operator<<(std::ostream& os, const Space& space);
 

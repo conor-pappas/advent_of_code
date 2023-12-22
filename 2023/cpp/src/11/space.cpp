@@ -32,14 +32,14 @@ namespace cosmic {
             std::unique_ptr<coord_type[]> rows;
         };
         static dim_index count_dimensions(const Space&);
-        static void expand_dimensions(Space&, const dim_index&);
-        static void expand_galaxies(Space&, const dim_index&);
+        static void expand_dimensions(Space&, const dim_index&,coord_type);
+        static void expand_galaxies(Space&, const dim_index&, coord_type);
     };
 
-    void Space::expand() {
+    void Space::expand(const coord_type size) {
         const auto index = Private::count_dimensions(*this);
-        Private::expand_dimensions(*this, index);
-        Private::expand_galaxies(*this, index);
+        Private::expand_dimensions(*this, index, size);
+        Private::expand_galaxies(*this, index, size);
     }
 
     Space::Private::dim_index Space::Private::count_dimensions(const Space& space) {
@@ -53,28 +53,28 @@ namespace cosmic {
         return { std::move(columns), std::move(rows) };
     }
 
-    void Space::Private::expand_dimensions(Space& space, const dim_index& index) {
+    void Space::Private::expand_dimensions(Space& space, const dim_index& index, const coord_type size) {
         coord_type width_adjust = 0;
         coord_type height_adjust = 0;
         for(coord_type x=0; x<space.m_width; ++x) {
-            if(index.columns[x] == 0) ++width_adjust;
+            if(index.columns[x] == 0) width_adjust += size;
         }
         for(coord_type y=0; y<space.m_height; ++y) {
-            if(index.rows[y] == 0) ++height_adjust;
+            if(index.rows[y] == 0) height_adjust += size;
         }
         space.m_width += width_adjust;
         space.m_height += height_adjust;
     }
 
-    void Space::Private::expand_galaxies(Space& space, const dim_index& index) {
+    void Space::Private::expand_galaxies(Space& space, const dim_index& index, const coord_type size) {
         galaxy_set new_galaxies;
         for(const auto& galaxy: space) {
             Galaxy shift = {0,0};
             for(coord_type x=0; x<galaxy.x(); ++x) {
-                if(index.columns[x] == 0) ++shift.x();
+                if(index.columns[x] == 0) shift.x() += size;
             }
             for(coord_type y=0; y<galaxy.y(); ++y) {
-                if(index.rows[y] == 0) ++shift.y();
+                if(index.rows[y] == 0) shift.y() += size;
             }
             new_galaxies.insert(galaxy + shift);
         }

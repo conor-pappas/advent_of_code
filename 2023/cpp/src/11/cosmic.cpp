@@ -12,7 +12,7 @@
 using namespace std;
 using namespace cosmic;
 
-Space::coord_type part_1(const Space& space) {
+Space::coord_type calculate_distances(const Space& space) {
     // I just want C++23 :(
     // auto pairs = std::cartesian_product(space, space);
 
@@ -29,15 +29,20 @@ Space::coord_type part_1(const Space& space) {
     return distance_sum / 2;
 }
 
-unsigned long part_2(const Space& space) {
-    return 0;
+Space::coord_type part_1(Space space) {
+    space.expand();
+    return calculate_distances(space);
+}
+
+unsigned long part_2(Space space) {
+    space.expand(999'999);
+    return calculate_distances(space);
 }
 
 int main(const int argc, const char** argv) {
     const vector<string> lines = support::read_input("11", argc, argv);
 
-    Space space = parse::parse_space(lines);
-    space.expand();
+    const Space space = parse::parse_space(lines);
 
     cout << "Part 1: " << part_1(space) << endl;
     cout << "Part 2: " << part_2(space) << endl;
