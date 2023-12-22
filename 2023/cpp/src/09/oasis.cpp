@@ -37,8 +37,7 @@ long part_2(const vector<History>& histories) {
 }
 
 int main(const int argc, const char** argv) {
-    vector<string> lines = support::read_input("09", argc, argv);
-    const span lines_span = lines;
+    const vector<string> lines = support::read_input("09", argc, argv);
 
     const auto histories = parse::parse_input(lines);
 

@@ -7,7 +7,6 @@
 #include <vector>
 #include <string>
 
-#include "input.hpp"
 #include "history.hpp"
 
 namespace oasis {

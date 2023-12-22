@@ -1,6 +1,7 @@
 support_include = include_directories('.')
 support_files = files([
-    'input.cpp'
+    'input.cpp',
+    'string.cpp'
 ])
 
 support_lib = library(

@@ -64,8 +64,8 @@ template <typename T>
 using PointMap = unordered_map<Point, T, Point::Hasher>;
 
 optional<const Point> readPoint(const Plane& plane, const int x, const int y) {
-    if (y < 0 || y >= plane.size()) return {};
-    if (x < 0 || x >= plane[y].size()) return {};
+    if (y < 0 || static_cast<size_t>(y) >= plane.size()) return {};
+    if (x < 0 || static_cast<size_t>(x) >= plane[y].size()) return {};
     return make_optional<const Point>(plane[y][x]);
 }
 
@@ -184,12 +184,12 @@ constexpr char EMPTY_CHARACTER = '.';
 
 Plane parsePlane(const vector<string>& lines) {
     Plane result;
-    for (int y = 0; y < lines.size(); y++) {
+    for (size_t y = 0; y < lines.size(); y++) {
         const string& line = lines[y];
         vector<Point> row;
-        for (int x = 0; x < line.length(); x++) {
+        for (size_t x = 0; x < line.length(); x++) {
             const char character = line[x];
-            row.push_back({x, y, character});
+            row.push_back({static_cast<int>(x), static_cast<int>(y), character});
         }
         result.push_back(row);
     }

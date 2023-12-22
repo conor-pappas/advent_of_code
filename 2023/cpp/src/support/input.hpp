@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include <vector>
 #include <filesystem>
-#include <fstream>
+#include <vector>
 
 namespace support {
     inline const char* INPUT_DIR_ENV_VAR = "AOC_INPUT_DIR";
@@ -16,6 +15,4 @@ namespace support {
     [[nodiscard]] std::filesystem::path input_dir();
     [[nodiscard]] std::vector<std::string> read_file(const std::filesystem::path& fileName);
     [[nodiscard]] std::vector<std::string> read_input(const std::string& day, int argc, const char** argv);
-
-    [[nodiscard]] std::vector<std::string> split(const std::string& str, const char& delim);
 };

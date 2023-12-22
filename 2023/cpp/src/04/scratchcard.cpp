@@ -57,10 +57,10 @@ public:
     void process() {
         card_counts.assign(scratchcards.size(), 1);
 
-        for (int i= 0; i < scratchcards.size(); i++) {
+        for (size_t i= 0; i < scratchcards.size(); i++) {
             const Scratchcard& scratchcard = scratchcards[i];
-            const int copy_count = static_cast<int>(scratchcard.getMatchedNumbers().size());
-            for (int j = 1; j <= copy_count && i+j < card_counts.size(); j++) {
+            const size_t copy_count = static_cast<int>(scratchcard.getMatchedNumbers().size());
+            for (size_t j = 1; j <= copy_count && i+j < card_counts.size(); j++) {
                 card_counts[i+j] += card_counts[i];
             }
         }

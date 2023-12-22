@@ -14,6 +14,7 @@
 #include <regex>
 
 #include "input.hpp"
+#include "string.hpp"
 
 using namespace std;
 

@@ -51,9 +51,9 @@ vector<Hand> parse_hands(const span<string> lines) {
 
 Hand::bid_t calculate_bid(const vector<Hand>& hands) {
     Hand::bid_t total_bid = 0;
-    for (int i = 0; i < hands.size(); i++) {
+    for (size_t i = 0; i < hands.size(); i++) {
         cout << hands[i] << endl;
-        total_bid += hands[i].bid * (i + 1);
+        total_bid += hands[i].bid * static_cast<Hand::bid_t>(i + 1);
     }
 
     return total_bid;

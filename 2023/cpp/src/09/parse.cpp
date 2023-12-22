@@ -4,6 +4,8 @@
 
 #include "parse.hpp"
 
+#include "string.hpp"
+
 std::vector<oasis::History> oasis::parse::parse_input(const std::vector<std::string>& lines) {
     std::vector<History> histories;
     histories.reserve(lines.size());
