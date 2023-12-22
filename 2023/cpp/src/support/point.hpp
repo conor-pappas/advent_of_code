@@ -4,9 +4,16 @@
 
 #pragma once
 
+#include <array>
+
 #include "point_fwd.hpp"
 
 namespace support {
+    // TODO: points kinda need two types. One for their own scalars, and another for their difference scalars.
+    // For example, you know all your points should be unsigned. But it's still useful to take a
+    // difference between two points, which would be signed.
+    // You need double the size of the original point for the difference, though.
+    // But we can of course make assertions about the sizes of the concrete values.
     template<typename Scalar, std::size_t N>
     class Point {
     public:
@@ -21,6 +28,9 @@ namespace support {
         Scalar& x();
         Scalar& y();
         Scalar& z();
+        const Scalar& x() const;
+        const Scalar& y() const;
+        const Scalar& z() const;
 
         static constexpr size_t size();
 
@@ -35,6 +45,8 @@ namespace support {
         Point& operator*=(const Scalar&);
         Point& operator/=(const Scalar&);
 
+        // TODO: Add Point::distance methods (which take in a metric, defaulting to Euclidean);
+
         friend bool operator==<Scalar, N>(const Point&, const Point&);
         friend Point operator+<Scalar, N>(const Point&, const Point&);
         friend Point operator-<Scalar, N>(const Point&, const Point&);
@@ -42,7 +54,7 @@ namespace support {
         friend Point operator*<Scalar, N>(const Scalar&, const Point&);
         friend Point operator/<Scalar, N>(const Point&, const Scalar&);
     private:
-        std::array<Scalar, N> m_coordinates;
+        std::array<Scalar, N> m_coordinates {};
     };
 
     template<typename Scalar, std::size_t N>
@@ -104,6 +116,24 @@ namespace support {
 
     template<typename Scalar, std::size_t N>
     Scalar& Point<Scalar, N>::z() {
+        static_assert(N >= 3, "Point<Scalar,N>::z() requires N >= 3");
+        return m_coordinates[2];
+    }
+
+    template<typename Scalar, std::size_t N>
+    const Scalar& Point<Scalar, N>::x() const {
+        static_assert(N >= 1, "Point<Scalar,N>::x() requires N >= 1");
+        return m_coordinates[0];
+    }
+
+    template<typename Scalar, std::size_t N>
+    const Scalar& Point<Scalar, N>::y() const {
+        static_assert(N >= 2, "Point<Scalar,N>::y() requires N >= 2");
+        return m_coordinates[1];
+    }
+
+    template<typename Scalar, std::size_t N>
+    const Scalar& Point<Scalar, N>::z() const {
         static_assert(N >= 3, "Point<Scalar,N>::z() requires N >= 3");
         return m_coordinates[2];
     }
