@@ -12,17 +12,17 @@ namespace support {
     bool operator==(const Point<Scalar, N>&, const Point<Scalar, N>&);
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N> operator+(const Point<Scalar, N>&, const Point<Scalar, N>&);
+    constexpr Point<Scalar, N> operator+(const Point<Scalar, N>&, const Point<Scalar, N>&);
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N> operator-(const Point<Scalar, N>&, const Point<Scalar, N>&);
+    constexpr Point<Scalar, N> operator-(const Point<Scalar, N>&, const Point<Scalar, N>&);
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N> operator*(const Point<Scalar, N>&, const Scalar&);
+    constexpr Point<Scalar, N> operator*(const Point<Scalar, N>&, const Scalar&);
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N> operator*(const Scalar&, const Point<Scalar, N>&);
+    constexpr Point<Scalar, N> operator*(const Scalar&, const Point<Scalar, N>&);
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N> operator/(const Point<Scalar, N>&, const Scalar&);
+    constexpr Point<Scalar, N> operator/(const Point<Scalar, N>&, const Scalar&);
 };

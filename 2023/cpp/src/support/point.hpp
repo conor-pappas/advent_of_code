@@ -12,11 +12,11 @@ namespace support {
     public:
         struct Hasher;
 
-        Point();
-        explicit Point(const std::array<Scalar, N>&);
-        explicit Point(const Scalar&);
-        Point(const Scalar&, const Scalar&);
-        Point(const Scalar&, const Scalar&, const Scalar&);
+        constexpr Point();
+        constexpr explicit Point(const std::array<Scalar, N>&);
+        constexpr explicit Point(const Scalar&);
+        constexpr Point(const Scalar&, const Scalar&);
+        constexpr Point(const Scalar&, const Scalar&, const Scalar&);
 
         Scalar& x();
         Scalar& y();
@@ -56,26 +56,26 @@ namespace support {
     }
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N>::Point(): m_coordinates() {}
+    constexpr Point<Scalar, N>::Point(): m_coordinates() {}
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N>::Point(const std::array<Scalar, N>& coords):
+    constexpr Point<Scalar, N>::Point(const std::array<Scalar, N>& coords):
         m_coordinates(coords) {}
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N>::Point(const Scalar& x) {
+    constexpr Point<Scalar, N>::Point(const Scalar& x) {
         static_assert(N == 1, "Point<Scalar,N>::Point(const Scalar&) requires N == 1");
         m_coordinates = { x };
     }
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N>::Point(const Scalar& x, const Scalar& y) {
+    constexpr Point<Scalar, N>::Point(const Scalar& x, const Scalar& y) {
         static_assert(N == 2, "Point<Scalar,N>::Point(const Scalar&, const Scalar&) requires N == 2");
         m_coordinates = { x, y };
     }
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N>::Point(const Scalar& x, const Scalar& y, const Scalar& z) {
+    constexpr Point<Scalar, N>::Point(const Scalar& x, const Scalar& y, const Scalar& z) {
         static_assert(N == 3, "Point<Scalar,N>::Point(const Scalar&, const Scalar&) requires N == 3");
         m_coordinates = { x, y, z};
     }
@@ -165,30 +165,30 @@ namespace support {
     }
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N> operator+(const Point<Scalar, N>& a, const Point<Scalar, N>& b) {
+    constexpr Point<Scalar, N> operator+(const Point<Scalar, N>& a, const Point<Scalar, N>& b) {
         Point<Scalar, N> result(a);
         return result += b;
     }
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N> operator-(const Point<Scalar, N>& point, const Point<Scalar, N>& scalar) {
+    constexpr Point<Scalar, N> operator-(const Point<Scalar, N>& point, const Point<Scalar, N>& scalar) {
         Point<Scalar, N> result(point);
         return result -= scalar;
     }
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N> operator*(const Point<Scalar, N>& point, const Scalar& scalar) {
+    constexpr Point<Scalar, N> operator*(const Point<Scalar, N>& point, const Scalar& scalar) {
         Point<Scalar, N> result(point);
         return result *= scalar;
     }
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N> operator*(const Scalar& scalar, const Point<Scalar, N>& point) {
+    constexpr Point<Scalar, N> operator*(const Scalar& scalar, const Point<Scalar, N>& point) {
         return point*scalar;
     }
 
     template<typename Scalar, std::size_t N>
-    Point<Scalar, N> operator/(const Point<Scalar, N>& a, const Scalar& b) {
+    constexpr Point<Scalar, N> operator/(const Point<Scalar, N>& a, const Scalar& b) {
         Point<Scalar, N> result(a);
         return result /= b;
     }

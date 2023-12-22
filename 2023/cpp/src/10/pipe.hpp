@@ -6,6 +6,7 @@
 
 #include <array>
 #include <optional>
+#include <__algorithm/ranges_sort.h>
 
 #include "point.hpp"
 
@@ -16,11 +17,13 @@ namespace maze {
         using Vector = support::Point<int, 2>;
         enum class Direction: unsigned char;
 
-        Pipe();
-        explicit Pipe(const std::array<Direction, 2>&);
-        Pipe(const Direction&, const Direction&);
-        explicit Pipe(const std::array<char, 2>&);
-        Pipe(const char&, const char&);
+        constexpr Pipe();
+        constexpr explicit Pipe(const std::array<Direction, 2>& directions);
+        constexpr Pipe(const Direction& d1, const Direction& d2);
+        constexpr explicit Pipe(const std::array<char, 2>& chars);
+        constexpr Pipe(const char& c1, const char& c2);
+
+        [[nodiscard]] const std::array<Direction, 2>& get_directions() const;
 
         [[nodiscard]] std::optional<Direction> follow(const Direction&) const;
 
@@ -37,11 +40,35 @@ namespace maze {
         std::array<Direction, 2> m_directions {};
     };
 
-    enum class Pipe::Direction: unsigned char{
-        NORTH = 0,
-        EAST = 1,
-        SOUTH = 2,
-        WEST = 3
+    constexpr Pipe::Pipe() = default;
+
+    constexpr Pipe::Pipe(const std::array<Direction, 2>& directions):
+        m_directions(directions) {
+        std::ranges::sort(m_directions);
+    }
+
+    constexpr Pipe::Pipe(const Direction& d1, const Direction& d2):
+        Pipe(std::array<Direction,2>({d1, d2})) {}
+
+    constexpr Pipe::Pipe(const std::array<char, 2>& chars):
+        Pipe(chars[0], chars[1]) {}
+
+    constexpr Pipe::Pipe(const char& c1, const char& c2):
+        Pipe(direciton_from_char(c1), direciton_from_char(c2)) {}
+
+    enum class Pipe::Direction: unsigned char {
+        NORTH,
+        EAST,
+        SOUTH,
+        WEST
     };
 
+    struct pipes {
+        static constexpr Pipe vertical = { Pipe::Direction::NORTH, Pipe::Direction::SOUTH };
+        static constexpr Pipe horizontal = { Pipe::Direction::EAST, Pipe::Direction::WEST };
+        static constexpr Pipe north_east = { Pipe::Direction::NORTH, Pipe::Direction::EAST };
+        static constexpr Pipe north_west = { Pipe::Direction::NORTH, Pipe::Direction::WEST };
+        static constexpr Pipe south_east = { Pipe::Direction::SOUTH, Pipe::Direction::EAST };
+        static constexpr Pipe south_west = { Pipe::Direction::SOUTH, Pipe::Direction::WEST };
+    };
 };

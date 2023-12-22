@@ -4,24 +4,10 @@
 
 #include "pipe.hpp"
 
-#include <__algorithm/ranges_sort.h>
-
 namespace maze {
-    Pipe::Pipe() = default;
-
-    Pipe::Pipe(const std::array<Direction, 2>& directions):
-        m_directions(directions) {
-        std::ranges::sort(m_directions);
+    const std::array<Pipe::Direction, 2>& Pipe::get_directions() const {
+        return m_directions;
     }
-
-    Pipe::Pipe(const Direction& d1, const Direction& d2):
-        Pipe(std::array<Direction,2>({d1, d2})) {}
-
-    Pipe::Pipe(const std::array<char, 2>& chars):
-        Pipe(chars[0], chars[1]) {}
-
-    Pipe::Pipe(const char& c1, const char& c2):
-        Pipe(direciton_from_char(c1), direciton_from_char(c2)) {}
 
     std::optional<Pipe::Direction> Pipe::follow(const Direction& input) const {
         if (input == m_directions[0]) return m_directions[1];
