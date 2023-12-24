@@ -16,6 +16,11 @@ namespace support {
         std::ranges::input_range<R>;
 
     template <typename R, typename T>
+    concept bidirectional_range_of =
+        range_of<R, T> &&
+        std::ranges::bidirectional_range<R>;
+
+    template <typename R, typename T>
     concept random_access_range_of =
         range_of<R, T> &&
         std::ranges::random_access_range<R>;
@@ -30,4 +35,21 @@ namespace support {
         iterator_of<I, T> &&
         std::input_iterator<I>;
 
+    template<typename Itr, typename Range>
+    concept range_around = std::bidirectional_iterator<Itr>
+        && support::bidirectional_range_of<Range, typename std::iterator_traits<Itr>::value_type>;
+
+    template<typename T>
+    using iterator_traits = std::iterator_traits<T>;
+
+    // TODO: missing const_iterator_t and const_sentinel_t in c++23
+    template<std::ranges::range Range>
+    struct range_traits {
+        using iterator_t = std::ranges::iterator_t<Range>;
+        using sentinel_t = std::ranges::sentinel_t<Range>;
+        using range_size_t = std::ranges::range_size_t<Range>;
+        using range_difference_t = std::ranges::range_difference_t<Range>;
+        using range_value_t = std::ranges::range_value_t<Range>;
+        using range_reference_t = std::ranges::range_reference_t<Range>;
+    };
 }
