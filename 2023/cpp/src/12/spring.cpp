@@ -8,22 +8,29 @@
 
 #include "input.hpp"
 #include "parse.hpp"
-#include "arrangement_finder.hpp"
+#include "arrangement_finder/finder.hpp"
 
 using namespace std;
 using namespace spring;
 
-size_t part_1(const vector<parse::Row>& rows) {
+size_t count_arrangements(const vector<parse::Row>& rows) {
     size_t result = 0;
     for (auto& [record, pattern] : rows) {
-        const auto arrangements = ArrangementFinder::find(record, pattern);
-        result += arrangements.size();;
+        result += arrangement_finder::Finder{}.find_count(record, pattern);;
     }
     return result;
 }
 
-unsigned int part_2() {
-    return 0;
+size_t part_1(const vector<parse::Row>& rows) {
+    return count_arrangements(rows);
+}
+
+size_t part_2(vector<parse::Row> rows) {
+    for (auto& row: rows) {
+        row.record.expand(5, {data_types::Condition::UNKNOWN});
+        row.pattern.expand(5);
+    }
+    return count_arrangements(rows);
 }
 
 int main(const int argc, const char** argv) {
@@ -32,5 +39,5 @@ int main(const int argc, const char** argv) {
     const auto rows = parse::parse_rows(lines);
 
     cout << "Part 1: " << part_1(rows) << endl;
-    cout << "Part 2: " << part_2() << endl;
+    cout << "Part 2: " << part_2(rows) << endl;
 }

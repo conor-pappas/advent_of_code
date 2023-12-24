@@ -23,19 +23,4 @@ namespace support {
         push();
         return strings;
     }
-
-    std::string join(const std::vector<std::string>& strings, const std::string& delim) {
-        std::string result;
-        join(strings, delim, result);
-        return result;
-    }
-
-    void join(const std::vector<std::string>& strings, const std::string& delim, std::string& result) {
-        for (size_t i=0; i < strings.size(); i++) {
-            result += strings[i];
-            if (i != strings.size() - 1) {
-                result += delim;
-            }
-        }
-    }
 }

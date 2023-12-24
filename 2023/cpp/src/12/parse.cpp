@@ -19,14 +19,14 @@ namespace spring::parse {
             std::regex_match(line, match, RECORD_REGEX);
             assert(match.size() == 3);
             auto conditions = std::string_view(match[1].str())
-                | std::views::transform(char_to_condition);
-            const Record record { conditions.begin(), conditions.end() };
+                | std::views::transform(data_types::Record::char_to_condition);
+            const data_types::Record record { conditions.begin(), conditions.end() };
             rows.push_back({record, parse_pattern(match[2])});
         }
         return rows;
     }
 
-    Pattern parse_pattern(const std::string& str) {
+    data_types::Pattern parse_pattern(const std::string& str) {
         const auto numbers = support::split(str, ',')
             | std::views::transform(parse_long);
         return {numbers.begin(), numbers.end()};
