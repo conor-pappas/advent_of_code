@@ -45,6 +45,8 @@ namespace support {
         Point& operator*=(const Scalar&);
         Point& operator/=(const Scalar&);
 
+        static constexpr Point unit(size_t);
+
         // TODO: Add Point::distance methods (which take in a metric, defaulting to Euclidean);
 
         friend bool operator==<Scalar, N>(const Point&, const Point&);
@@ -178,6 +180,13 @@ namespace support {
             (*this)[i] /= scalar;
         }
         return *this;
+    }
+
+    template<typename Scalar, std::size_t N>
+    constexpr Point<Scalar, N> Point<Scalar, N>::unit(size_t dimension) {
+        Point result;
+        result[dimension] = 1;
+        return result;
     }
 
     template<typename Scalar, std::size_t N>

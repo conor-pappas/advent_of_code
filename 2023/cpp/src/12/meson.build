@@ -6,4 +6,4 @@ spring_files = [
     'arrangement_finder/request.cpp',
     'arrangement_finder/finder.cpp'
 ]
-executable('spring', spring_files, dependencies: dep_support_lib, override_options: ['werror=false'])
+executable('spring', spring_files, dependencies: dep_support_lib)
