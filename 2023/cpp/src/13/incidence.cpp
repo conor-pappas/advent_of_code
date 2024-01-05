@@ -1,4 +1,4 @@
-// Day 12: Point of Incidence
+// Day 13: Point of Incidence
 // https://adventofcode.com/2023/day/13
 //
 // Created by Conor Pappas on 12/23/23.
