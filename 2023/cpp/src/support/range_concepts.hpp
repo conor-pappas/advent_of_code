@@ -11,12 +11,12 @@ namespace support {
     // TODO: missing const_iterator_t and const_sentinel_t in c++23
     template<std::ranges::range Range>
     struct range_traits {
-        using iterator_t = std::ranges::iterator_t<Range>;
-        using sentinel_t = std::ranges::sentinel_t<Range>;
-        using range_size_t = std::ranges::range_size_t<Range>;
-        using range_difference_t = std::ranges::range_difference_t<Range>;
-        using range_value_t = std::ranges::range_value_t<Range>;
-        using range_reference_t = std::ranges::range_reference_t<Range>;
+        using iterator = std::ranges::iterator_t<Range>;
+        using sentinel = std::ranges::sentinel_t<Range>;
+        using range_size = std::ranges::range_size_t<Range>;
+        using range_difference = std::ranges::range_difference_t<Range>;
+        using range_value = std::ranges::range_value_t<Range>;
+        using range_reference = std::ranges::range_reference_t<Range>;
     };
 
     template <typename R, typename T>
