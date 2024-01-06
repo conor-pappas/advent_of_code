@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <stddef.h>
+
 namespace support {
     template<typename T, size_t dimension>
         requires (dimension > 0)

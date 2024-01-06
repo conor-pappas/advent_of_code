@@ -4,13 +4,15 @@
 
 #pragma once
 
-#include <ostream>
+#include "cyclic_iterator_fwd.hpp"
 
-// TODO: this should be in cyclic_view.hpp and not _really_ called directly.
 namespace support {
-    template <typename Iterator>
+    template <std::forward_iterator Iterator>
     class CyclicIterator {
     public:
+        // TODO: this is false, we need to conditionally implement the remaining iterator operators. (RAI and Continuous)
+        // In fact, we'd likely change the data stored to just be cycle + offset for random_access_iterators.
+        // This class should be implemented entirely differently for them.
         using iterator_category = typename std::iterator_traits<Iterator>::iterator_category;
         using difference_type   = typename std::iterator_traits<Iterator>::difference_type;
         using value_type        = typename std::iterator_traits<Iterator>::value_type;
@@ -18,6 +20,10 @@ namespace support {
         using reference         = typename std::iterator_traits<Iterator>::reference;
 
         using CycleCountType = long;
+        struct InfiniteSentinel {};
+        struct cycle {
+            CycleCountType count { 1 };
+        };
 
         CyclicIterator();
         CyclicIterator(const Iterator& begin, const Iterator& end);
@@ -28,29 +34,26 @@ namespace support {
         [[nodiscard]] CycleCountType get_cycle_count() const;
         void set_cycle_count(CycleCountType);
 
+        // TODO: we should have a "cycle" static and allow adding and subtracting cycles with +/- operators.
         void inc_cycle_count();
         void dec_cycle_count();
 
         bool mod_equals(const CyclicIterator&) const;
         bool mod_not_equals(const CyclicIterator&) const;
 
-        bool operator==(const CyclicIterator& other) const;
-        bool operator!=(const CyclicIterator& other) const;
+        friend bool operator==<Iterator>(const CyclicIterator&, const CyclicIterator&);
+        friend bool operator==<Iterator>(CyclicIterator, InfiniteSentinel);
 
         reference operator*() const;
         pointer operator->() const;
 
         CyclicIterator& operator++();
         CyclicIterator operator++(int) &;
-        // TODO: UB if the input iterator is not bidirectional. Should proly take a template param
-        CyclicIterator& operator--();
-        CyclicIterator operator--(int) &;
+        CyclicIterator& operator--() requires std::bidirectional_iterator<Iterator>;
+        CyclicIterator operator--(int)& requires std::bidirectional_iterator<Iterator>;
 
-        friend std::ostream& operator<<(std::ostream& os, const CyclicIterator& cyclic_iterator) {
-            os << "CyclicIterator(" << cyclic_iterator.m_cursor << ", " << cyclic_iterator.m_cycle_count << ")";
-            return os;
-        }
-
+        CyclicIterator& operator+=(cycle);
+        CyclicIterator& operator-=(cycle);
     private:
         Iterator m_begin {};
         Iterator m_end {};
@@ -58,88 +61,78 @@ namespace support {
         CycleCountType m_cycle_count = 0;
     };
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     CyclicIterator<Iterator>::CyclicIterator() = default;
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     CyclicIterator<Iterator>::CyclicIterator(const Iterator& begin, const Iterator& end):
         m_begin(begin),
         m_end(end),
         m_cursor(begin) {}
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     CyclicIterator<Iterator>::CyclicIterator(const Iterator& begin, const Iterator& end, const Iterator& cursor):
         m_begin(begin),
         m_end(end),
         m_cursor(cursor) {}
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     CyclicIterator<Iterator>::CyclicIterator(const Iterator& begin, const Iterator& end, const CycleCountType& cycle_count):
         m_begin(begin),
         m_end(end),
         m_cursor(begin),
         m_cycle_count(cycle_count) {}
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     CyclicIterator<Iterator>::CyclicIterator(const Iterator& begin, const Iterator& end, const Iterator& cursor, const CycleCountType& cycle_count):
         m_begin(begin),
         m_end(end),
         m_cursor(cursor),
         m_cycle_count(cycle_count) {}
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     typename CyclicIterator<Iterator>::CycleCountType CyclicIterator<Iterator>::get_cycle_count() const {
         return m_cycle_count;
     }
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     void CyclicIterator<Iterator>::set_cycle_count(CycleCountType cycle_count) {
         this->m_cycle_count = cycle_count;
     }
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     void CyclicIterator<Iterator>::inc_cycle_count() {
         ++m_cycle_count;
     }
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     void CyclicIterator<Iterator>::dec_cycle_count() {
         --m_cycle_count;
     }
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     bool CyclicIterator<Iterator>::mod_equals(const CyclicIterator& other) const {
         return m_begin == other.m_begin
             && m_end == other.m_end
             && m_cursor == other.m_cursor;
     }
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     bool CyclicIterator<Iterator>::mod_not_equals(const CyclicIterator& other) const {
         return !mod_equals(other);
     }
 
-    template<typename Iterator>
-    bool CyclicIterator<Iterator>::operator==(const CyclicIterator& other) const {
-        return mod_equals(other) && m_cycle_count == other.m_cycle_count;
-    }
-
-    template<typename Iterator>
-    bool CyclicIterator<Iterator>::operator!=(const CyclicIterator& other) const {
-        return !(*this == other);
-    }
-
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     typename CyclicIterator<Iterator>::reference CyclicIterator<Iterator>::operator*() const {
         return *m_cursor;
     }
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     typename CyclicIterator<Iterator>::pointer CyclicIterator<Iterator>::operator->() const {
         return m_cursor;
     }
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     CyclicIterator<Iterator>& CyclicIterator<Iterator>::operator++() {
         ++m_cursor;
         if (m_cursor == m_end) {
@@ -149,15 +142,16 @@ namespace support {
         return *this;
     }
 
-    template<typename Iterator>
+    template<std::forward_iterator Iterator>
     CyclicIterator<Iterator> CyclicIterator<Iterator>::operator++(int) & {
         CyclicIterator result = *this;
         ++*this;
         return result;
     }
 
-    template<typename Iterator>
-    CyclicIterator<Iterator>& CyclicIterator<Iterator>::operator--() {
+    template<std::forward_iterator Iterator>
+    CyclicIterator<Iterator>& CyclicIterator<Iterator>::operator--()
+        requires std::bidirectional_iterator<Iterator> {
         if (m_cursor == m_begin) {
             m_cursor = m_end;
             --m_cycle_count;
@@ -166,10 +160,33 @@ namespace support {
         return *this;
     }
 
-    template<typename Iterator>
-    CyclicIterator<Iterator> CyclicIterator<Iterator>::operator--(int) & {
+    template<std::forward_iterator Iterator>
+    CyclicIterator<Iterator> CyclicIterator<Iterator>::operator--(int)&
+        requires std::bidirectional_iterator<Iterator> {
         CyclicIterator result = *this;
         --*this;
         return result;
+    }
+
+    template<std::forward_iterator Iterator>
+    CyclicIterator<Iterator>& CyclicIterator<Iterator>::operator+=(const cycle c) {
+        m_cycle_count += c.count;
+        return this;
+    }
+
+    template<std::forward_iterator Iterator>
+    CyclicIterator<Iterator>& CyclicIterator<Iterator>::operator-=(const cycle c) {
+        m_cycle_count -= c.count;
+        return this;
+    }
+
+    template<std::forward_iterator Iterator>
+    bool operator==(const CyclicIterator<Iterator>& lhs, const CyclicIterator<Iterator>& rhs) {
+        return lhs.mod_equals(rhs) && lhs.m_cycle_count == rhs.m_cycle_count;
+    }
+
+    template<std::forward_iterator Iterator>
+    bool operator==(CyclicIterator<Iterator>, typename CyclicIterator<Iterator>::InfiniteSentinel) {
+        return false;
     }
 };
