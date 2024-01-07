@@ -10,6 +10,8 @@
 #include <functional>
 #include <iostream>
 
+#include "point.hpp"
+
 namespace support {
     // TODO: actually support dims higher than 2 for "rows" / "columns"
     template <typename T, size_t dimension = 2>
@@ -29,6 +31,11 @@ namespace support {
         const_reference at(size_type index) const;
         reference operator[](size_type index);
         const_reference operator[](size_type index) const;
+
+        T& get(const Point<size_type, dimension>& point) requires (dimension > 1);
+        const T& get(const Point<size_type, dimension>& point) const requires (dimension > 1);
+        T& get(const Point<size_type, dimension>& point) requires (dimension == 1);
+        const T& get(const Point<size_type, dimension>& point) const requires (dimension == 1);
 
         [[nodiscard]] iterator begin() noexcept;
         [[nodiscard]] iterator end() noexcept;
@@ -54,49 +61,75 @@ namespace support {
 
     template<typename T, size_t dimension>
         requires (dimension > 0)
-    Grid<T, dimension>::reference Grid<T, dimension>::at(Grid<T, dimension>::size_type index) {
+    typename Grid<T, dimension>::reference Grid<T, dimension>::at(Grid<T, dimension>::size_type index) {
         return m_sub_grids.at(index);
     }
 
     template<typename T, size_t dimension>
         requires (dimension > 0)
-    Grid<T, dimension>::const_reference Grid<T, dimension>::at(Grid<T, dimension>::size_type index) const {
+    typename Grid<T, dimension>::const_reference Grid<T, dimension>::at(Grid<T, dimension>::size_type index) const {
         return m_sub_grids.at(index);
     }
 
     template<typename T, size_t dimension>
         requires (dimension > 0)
-    Grid<T, dimension>::reference Grid<T, dimension>::operator[](Grid<T, dimension>::size_type index) {
+    typename Grid<T, dimension>::reference Grid<T, dimension>::operator[](Grid<T, dimension>::size_type index) {
         return m_sub_grids[index];
     }
 
     template<typename T, size_t dimension>
         requires (dimension > 0)
-    Grid<T, dimension>::const_reference Grid<T, dimension>::operator[](Grid<T, dimension>::size_type index) const {
+    typename Grid<T, dimension>::const_reference Grid<T, dimension>::operator[](Grid<T, dimension>::size_type index) const {
         return m_sub_grids[index];
+    }
+
+    template<typename T, size_t dimension> requires (dimension > 0)
+    T& Grid<T, dimension>::get(const Point<size_type, dimension>& point)
+    requires (dimension > 1) {
+        const auto [rest, index] = point.destructure_right();
+        return m_sub_grids[index].get(rest);
+    }
+
+    template<typename T, size_t dimension> requires (dimension > 0)
+    const T& Grid<T, dimension>::get(const Point<size_type, dimension>& point) const
+    requires (dimension > 1) {
+        const auto [rest, index] = point.destructure_right();
+        return m_sub_grids[index].get(rest);
+    }
+
+    template<typename T, size_t dimension> requires (dimension > 0)
+    T& Grid<T, dimension>::get(const Point<size_type, dimension>& point)
+    requires (dimension == 1) {
+        return m_sub_grids[point[0]];
+    }
+
+    template<typename T, size_t dimension> requires (dimension > 0)
+    const T& Grid<T, dimension>::get(const Point<size_type, dimension>& point) const
+    requires (dimension == 1) {
+        return m_sub_grids[point[0]];
     }
 
     template<typename T, size_t dimension>
         requires (dimension > 0)
-    Grid<T, dimension>::iterator Grid<T, dimension>::begin() noexcept{
+    typename Grid<T, dimension>::iterator Grid<T, dimension>::begin() noexcept{
         return m_sub_grids.begin();
     }
 
     template<typename T, size_t dimension>
         requires (dimension > 0)
-    Grid<T, dimension>::iterator Grid<T, dimension>::end() noexcept{
+    typename Grid<T, dimension>::iterator Grid<T, dimension>::end() noexcept{
         return m_sub_grids.end();
     }
 
     template<typename T, size_t dimension>
         requires (dimension > 0)
-    Grid<T, dimension>::const_iterator Grid<T, dimension>::begin() const noexcept{
+    typename Grid<T, dimension>::const_iterator Grid<T, dimension>::begin() const noexcept{
         return m_sub_grids.begin();
     }
 
     template<typename T, size_t dimension>
         requires (dimension > 0)
-    Grid<T, dimension>::const_iterator Grid<T, dimension>::end() const noexcept{
+    typename Grid<T, dimension>::const_iterator Grid<T, dimension>::end() const noexcept{
         return m_sub_grids.end();
     }
 

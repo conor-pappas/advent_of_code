@@ -9,12 +9,13 @@
 #include "point_fwd.hpp"
 
 namespace support {
+    using dimension_t = size_t;
     // TODO: points kinda need two types. One for their own scalars, and another for their difference scalars.
     // For example, you know all your points should be unsigned. But it's still useful to take a
     // difference between two points, which would be signed.
     // You need double the size of the original point for the difference, though.
     // But we can of course make assertions about the sizes of the concrete values.
-    template<typename Scalar, std::size_t N>
+    template<typename Scalar, dimension_t N>
     class Point {
     public:
         struct Hasher;
@@ -37,6 +38,20 @@ namespace support {
         Point operator-() const;
         Scalar& operator[](std::size_t);
         const Scalar& operator[](std::size_t) const;
+
+        std::tuple<Point<Scalar, N-1>, dimension_t> break_right();
+        std::tuple<dimension_t, Point<Scalar, N-1>> break_left();
+        template <dimension_t D>
+        std::tuple<Point<Scalar, -D>, Point<Scalar, D>> break_right();
+        template <dimension_t D>
+        std::tuple<Point<Scalar, D>, Point<Scalar, N-D>> break_left();
+
+        std::tuple<Point<Scalar, N-1>, dimension_t> destructure_right() const;
+        std::tuple<dimension_t, Point<Scalar, N-1>> destructure_left() const;
+        template <dimension_t D>
+        std::tuple<Point<Scalar, -D>, Point<Scalar, D>> destructure_right() const;
+        template <dimension_t D>
+        std::tuple<Point<Scalar, D>, Point<Scalar, N-D>> destructure_left() const;
 
         // TODO: Casting between points of different types
 
@@ -102,6 +117,66 @@ namespace support {
     template<typename Scalar, std::size_t N>
     const Scalar& Point<Scalar, N>::operator[](std::size_t i) const {
         return m_coordinates[i];
+    }
+
+    template<typename Scalar, std::size_t N>
+    std::tuple<Point<Scalar, N - 1>, dimension_t> Point<Scalar, N>::break_right() {
+        std::array<Scalar, N - 1> new_coordinates;
+        std::move(m_coordinates.begin(), m_coordinates.end() - 1, new_coordinates.begin());
+        return { std::move(new_coordinates), m_coordinates.back() };
+    }
+
+    template<typename Scalar, dimension_t N>
+    std::tuple<dimension_t, Point<Scalar, N - 1>> Point<Scalar, N>::break_left() {
+        std::array<Scalar, N - 1> new_coordinates;
+        std::move(m_coordinates.begin() + 1, m_coordinates.end(), new_coordinates.begin());
+        return { std::move(new_coordinates), m_coordinates.back() };
+    }
+
+    template<typename Scalar, dimension_t N>
+    template<dimension_t D>
+    std::tuple<Point<Scalar, -D>, Point<Scalar, D>> Point<Scalar, N>::break_right() {
+        std::array<Scalar, N - D> new_coordinates_left;
+        std::move(m_coordinates.begin(), m_coordinates.end() - D, new_coordinates_left.begin());
+        std::array<Scalar, D> new_coordinates_right;
+        std::move(m_coordinates.end() - D, m_coordinates.end(), new_coordinates_right.begin());
+        return { std::move(new_coordinates_left), std::move(new_coordinates_right) };
+    }
+
+    template<typename Scalar, dimension_t N>
+    template<dimension_t D>
+    std::tuple<Point<Scalar, D>, Point<Scalar, N - D>> Point<Scalar, N>::break_left() {
+        std::array<Scalar, N - D> new_coordinates_left;
+        std::move(m_coordinates.begin(), m_coordinates.begin() + D, new_coordinates_left.begin());
+        std::array<Scalar, D> new_coordinates_right;
+        std::move(m_coordinates.begin() + D, m_coordinates.end(), new_coordinates_right.begin());
+        return { std::move(new_coordinates_left), std::move(new_coordinates_right) };
+    }
+
+    template<typename Scalar, dimension_t N>
+    std::tuple<Point<Scalar, N - 1>, dimension_t> Point<Scalar, N>::destructure_right() const {
+        Point copy = *this;
+        return copy.break_right();
+    }
+
+    template<typename Scalar, dimension_t N>
+    std::tuple<dimension_t, Point<Scalar, N - 1>> Point<Scalar, N>::destructure_left() const {
+        Point copy = *this;
+        return copy.break_left();
+    }
+
+    template<typename Scalar, dimension_t N>
+    template<dimension_t D>
+    std::tuple<Point<Scalar, -D>, Point<Scalar, D>> Point<Scalar, N>::destructure_right() const {
+        Point copy = *this;
+        return copy.break_right<D>();
+    }
+
+    template<typename Scalar, dimension_t N>
+    template<dimension_t D>
+    std::tuple<Point<Scalar, D>, Point<Scalar, N - D>> Point<Scalar, N>::destructure_left() const {
+        Point copy = *this;
+        return copy.break_left<D>();
     }
 
     template<typename Scalar, std::size_t N>
