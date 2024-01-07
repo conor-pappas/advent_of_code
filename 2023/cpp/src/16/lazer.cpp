@@ -55,8 +55,23 @@ size_t part_1(const MirrorGrid& mirror_grid) {
     return count_emitting(simulate_emission(mirror_grid, {0,0}, EAST));
 }
 
-size_t part_2(const MirrorGrid&) {
-    return 0;
+size_t part_2(const MirrorGrid& mirror_grid) {
+    vector<tuple<Location,Direction>> starting_locations;
+    for(size_t x=0; x<mirror_grid.width(); x++) {
+        starting_locations.emplace_back(Location{x,0}, SOUTH);
+        starting_locations.emplace_back(Location{x,mirror_grid.height()-1}, NORTH);
+    }
+    for(size_t y=0; y<mirror_grid.height(); y++) {
+        starting_locations.emplace_back(Location{0,y}, EAST);
+        starting_locations.emplace_back(Location{mirror_grid.width()-1,y}, WEST);
+    }
+    size_t largest_emitting = 0;
+    for(const auto& [location, direction] : starting_locations) {
+        const auto emission_grid = simulate_emission(mirror_grid, location, direction);
+        const auto emitting_count = count_emitting(emission_grid);
+        if(emitting_count > largest_emitting) largest_emitting = emitting_count;
+    }
+    return largest_emitting;
 }
 
 int main(const int argc, const char** argv) {
