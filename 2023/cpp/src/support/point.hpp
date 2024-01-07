@@ -123,14 +123,16 @@ namespace support {
     std::tuple<Point<Scalar, N - 1>, dimension_t> Point<Scalar, N>::break_right() {
         std::array<Scalar, N - 1> new_coordinates;
         std::move(m_coordinates.begin(), m_coordinates.end() - 1, new_coordinates.begin());
-        return { std::move(new_coordinates), m_coordinates.back() };
+        const auto left_point = Point<Scalar, N - 1>(std::move(new_coordinates));
+        return {left_point, m_coordinates.back() };
     }
 
     template<typename Scalar, dimension_t N>
     std::tuple<dimension_t, Point<Scalar, N - 1>> Point<Scalar, N>::break_left() {
         std::array<Scalar, N - 1> new_coordinates;
         std::move(m_coordinates.begin() + 1, m_coordinates.end(), new_coordinates.begin());
-        return { std::move(new_coordinates), m_coordinates.back() };
+        const auto right_point = Point<Scalar, N-1>(std::move(new_coordinates));
+        return { m_coordinates.front(), std::move(new_coordinates) };
     }
 
     template<typename Scalar, dimension_t N>
@@ -140,7 +142,9 @@ namespace support {
         std::move(m_coordinates.begin(), m_coordinates.end() - D, new_coordinates_left.begin());
         std::array<Scalar, D> new_coordinates_right;
         std::move(m_coordinates.end() - D, m_coordinates.end(), new_coordinates_right.begin());
-        return { std::move(new_coordinates_left), std::move(new_coordinates_right) };
+        const auto left_point = Point<Scalar, -D>(std::move(new_coordinates_left));
+        const auto right_point = Point<Scalar, D>(std::move(new_coordinates_right));
+        return { left_point, right_point };
     }
 
     template<typename Scalar, dimension_t N>
@@ -150,7 +154,9 @@ namespace support {
         std::move(m_coordinates.begin(), m_coordinates.begin() + D, new_coordinates_left.begin());
         std::array<Scalar, D> new_coordinates_right;
         std::move(m_coordinates.begin() + D, m_coordinates.end(), new_coordinates_right.begin());
-        return { std::move(new_coordinates_left), std::move(new_coordinates_right) };
+        const auto left_point = Point<Scalar, D>(std::move(new_coordinates_left));
+        const auto right_point = Point<Scalar, N - D>(std::move(new_coordinates_right));
+        return { left_point, right_point };
     }
 
     template<typename Scalar, dimension_t N>
