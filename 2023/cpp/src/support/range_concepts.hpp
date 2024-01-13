@@ -19,6 +19,9 @@ namespace support {
         using range_reference = std::ranges::range_reference_t<Range>;
     };
 
+    template <typename Range, typename Itr>
+    concept range_iterated_by = std::ranges::common_range<Range> && std::same_as<typename range_traits<Range>::iterator, Itr>;
+
     template <typename R, typename T>
     concept range_of =
         std::ranges::range<R> &&
