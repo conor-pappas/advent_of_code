@@ -17,7 +17,8 @@ days = [
     '14',
     '15',
     '16',
-    '17'
+    '17',
+    '18'
 ]
 foreach day : days
     subdir(join_paths('src', day))
