@@ -26,7 +26,7 @@ namespace support {
 
     template<typename T>
     Grid<T> parse_grid(const std::vector<std::string>& lines) {
-        return parse_grid<T>(lines, [](char c) { return c; });
+        return parse_grid<T>(lines, [](char c) { return static_cast<T>(c); });
     }
 
     template<typename T>

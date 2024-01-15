@@ -29,9 +29,9 @@ namespace support {
     template<input_range_of<std::string> Range>
     void join(const Range& range, const std::string& delim, std::string& result) {
         using namespace std::ranges;
-        for (auto itr = begin(range); itr < end(range); ++itr) {
+        for (auto itr = std::begin(range); itr < std::end(range); ++itr) {
             result += *itr;
-            if (itr + 1 != end(range)) {
+            if (itr + 1 != std::end(range)) {
                 result += delim;
             }
         }

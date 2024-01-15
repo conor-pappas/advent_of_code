@@ -1,4 +1,4 @@
-// Day 17: Lavaduct Lagoon
+// Day 18: Lavaduct Lagoon
 // https://adventofcode.com/2023/day/18
 //
 // Created by Conor Pappas on 1/15/24.
