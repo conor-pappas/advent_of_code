@@ -22,12 +22,20 @@ namespace support {
     Grid<T> parse_grid(const std::vector<std::string>& lines);
 
     template<typename T>
+    Grid<T> parse_grid(const std::vector<std::string>& lines, std::function<T(char)> parse);
+
+    template<typename T>
     Grid<T> parse_grid(const std::vector<std::string>& lines) {
+        return parse_grid<T>(lines, [](char c) { return c; });
+    }
+
+    template<typename T>
+    Grid<T> parse_grid(const std::vector<std::string>& lines, std::function<T(char)> parse) {
         Grid<T> grid;
         for (const std::string& line : lines) {
             typename Grid<T>::value_type row;
             for (const char& c : line) {
-                row.push_back(static_cast<T>(c));
+                row.push_back(parse(c));
             }
             grid.push_back(row);
         }

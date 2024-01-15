@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <ostream>
+
 namespace support {
     template<typename Scalar, std::size_t N>
     class Point;
@@ -25,4 +27,7 @@ namespace support {
 
     template<typename Scalar, std::size_t N>
     constexpr Point<Scalar, N> operator/(const Point<Scalar, N>&, const Scalar&);
+
+    template<typename Scalar, std::size_t N>
+    std::ostream& operator<<(std::ostream & os, const Point<Scalar, N>&);
 };

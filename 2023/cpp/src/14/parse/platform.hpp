@@ -5,6 +5,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include "data_types/platform.hpp"
 

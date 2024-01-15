@@ -33,6 +33,7 @@ namespace support {
         reference operator[](size_type index);
         const_reference operator[](size_type index) const;
 
+        // TODO: Point should be a template param
         T& get(const Point<size_type, dimension>&) requires (dimension > 1);
         const T& get(const Point<size_type, dimension>&) const requires (dimension > 1);
         T& get(const Point<size_type, dimension>&) requires (dimension == 1);

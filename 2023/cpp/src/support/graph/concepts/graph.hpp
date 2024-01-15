@@ -32,9 +32,7 @@ namespace support::graph::concepts {
     };
 
     template<typename G>
-    concept GraphConstructors =
-        std::default_initializable<G> &&
-        std::copy_constructible<G>;
+    concept GraphConstructors = std::copy_constructible<G>;
 
     // TODO: This seems like a generic concept for "set management" of a given type
     template<typename G>

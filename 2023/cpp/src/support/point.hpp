@@ -5,8 +5,10 @@
 #pragma once
 
 #include <array>
+#include <algorithm>
 
 #include "point_fwd.hpp"
+#include "string.hpp"
 
 namespace support {
     using dimension_t = size_t;
@@ -70,6 +72,8 @@ namespace support {
         friend Point operator*<Scalar, N>(const Point&, const Scalar&);
         friend Point operator*<Scalar, N>(const Scalar&, const Point&);
         friend Point operator/<Scalar, N>(const Point&, const Scalar&);
+
+        friend std::ostream& operator<<<Scalar, N>(std::ostream&, const Point&);
     private:
         std::array<Scalar, N> m_coordinates {};
     };
@@ -311,5 +315,18 @@ namespace support {
     constexpr Point<Scalar, N> operator/(const Point<Scalar, N>& a, const Scalar& b) {
         Point<Scalar, N> result(a);
         return result /= b;
+    }
+
+    // TODO: Make use of "string.hpp" join method (which takes in a range of strings right now)
+    template<typename Scalar, std::size_t N>
+    std::ostream& operator<<(std::ostream& os, const Point<Scalar, N>& point) {
+        os << "(";
+        for (std::size_t i = 0; i < N; ++i) {
+            os << point[i];
+            if (i != N - 1) {
+                os << ", ";
+            }
+        }
+        return os << ")";
     }
 }

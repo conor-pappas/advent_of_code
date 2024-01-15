@@ -8,6 +8,7 @@
 #include <queue>
 
 #include "graph/graph_traits.hpp"
+#include "range_concepts.hpp"
 
 namespace support::graph::algorithms {
 
@@ -24,7 +25,7 @@ namespace support::graph::algorithms {
 
     // TODO: This should be a concept for a map instead of std::map concretely
     template<typename Graph>
-    using PredecessorMap = std::map<vertex_descriptor<Graph>, vertex_descriptor<Graph>>;
+    using ShortestPathsMap = std::map<vertex_descriptor<Graph>, vertex_descriptor<Graph>>;
 
     enum class VertexStatus {
         Undiscovered,
@@ -35,13 +36,13 @@ namespace support::graph::algorithms {
     template<typename Graph>
     using VertexPriorityQueue = std::priority_queue<vertex_descriptor<Graph>, std::vector<vertex_descriptor<Graph>>, std::greater<distance_t>>;
 
-    template <concepts::Graph Graph>
+    template <concepts::Graph Graph, range_of<typename graph_traits<Graph>::vertex_descriptor> VertexRange>
     void dijkstra_shortest_paths(
         const Graph& graph,
-        typename graph_traits<Graph>::vertex_descriptor start,
+        VertexRange start_nodes,
         std::function<distance_t(typename graph_traits<Graph>::arc_descriptor)> edge_weight,
         DistanceMap<Graph>& distances,
-        PredecessorMap<Graph>& shortest_paths)
+        ShortestPathsMap<Graph>& shortest_paths)
     {
         const auto order = num_vertices(graph);
         std::vector<VertexStatus> node_status(order, VertexStatus::Undiscovered);
@@ -50,9 +51,12 @@ namespace support::graph::algorithms {
         };
         using vertex_descriptor = typename graph_traits<Graph>::vertex_descriptor;
         auto vertex_queue = std::priority_queue<vertex_descriptor, std::vector<vertex_descriptor>, decltype(compare)>(compare);
-        vertex_queue.push(start);
-        node_status[start] = VertexStatus::Queued;
-        distances[start] = 0;
+        for(const auto& start_node : start_nodes) {
+            vertex_queue.push(start_node);
+            node_status[start_node] = VertexStatus::Queued;
+            distances[start_node] = 0;
+            shortest_paths[start_node] = start_node;
+        }
 
         while(!vertex_queue.empty()) {
             const auto current = vertex_queue.top();
@@ -75,13 +79,37 @@ namespace support::graph::algorithms {
     }
 
     template <concepts::Graph Graph>
-    std::tuple<DistanceMap<Graph>, PredecessorMap<Graph>> dijkstra_shortest_paths(
+    void dijkstra_shortest_paths(
+        const Graph& graph,
+        typename graph_traits<Graph>::vertex_descriptor start_node,
+        std::function<distance_t(typename graph_traits<Graph>::arc_descriptor)> edge_weight,
+        DistanceMap<Graph>& distances,
+        ShortestPathsMap<Graph>& shortest_paths)
+    {
+        auto start_nodes = { start_node };
+        dijkstra_shortest_paths(graph, start_nodes, edge_weight, distances, shortest_paths);
+    }
+
+    template <concepts::Graph Graph, range_of<typename graph_traits<Graph>::vertex_descriptor> VertexRange>
+    std::tuple<DistanceMap<Graph>, ShortestPathsMap<Graph>> dijkstra_shortest_paths(
+        const Graph& graph,
+        VertexRange start_nodes,
+        std::function<distance_t(typename graph_traits<Graph>::arc_descriptor)> edge_weight)
+    {
+        DistanceMap<Graph> distances;
+        ShortestPathsMap<Graph> shortest_paths;
+        dijkstra_shortest_paths(graph, start_nodes, edge_weight, distances, shortest_paths);
+        return {distances, shortest_paths};
+    }
+
+    template <concepts::Graph Graph>
+    std::tuple<DistanceMap<Graph>, ShortestPathsMap<Graph>> dijkstra_shortest_paths(
         const Graph& graph,
         typename graph_traits<Graph>::vertex_descriptor start,
         std::function<distance_t(typename graph_traits<Graph>::arc_descriptor)> edge_weight)
     {
         DistanceMap<Graph> distances;
-        PredecessorMap<Graph> shortest_paths;
+        ShortestPathsMap<Graph> shortest_paths;
         dijkstra_shortest_paths(graph, start, edge_weight, distances, shortest_paths);
         return {distances, shortest_paths};
     }

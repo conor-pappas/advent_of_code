@@ -5,7 +5,6 @@
 #pragma once
 
 #include "impl/adjacenty_list.hpp"
-#include "concepts/graph.hpp"
 
 namespace support::graph {
     struct no_data {};
@@ -30,8 +29,6 @@ namespace support::graph {
         using vertices_size_type = typename types::vertices_size_type;
         using arcs_size_type = typename types::arcs_size_type;
         using degree_size_type = typename types::degree_size_type;
-
-        static_assert(concepts::Graph<adjacency_list>);
     };
 
 }
