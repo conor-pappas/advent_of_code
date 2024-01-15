@@ -19,11 +19,13 @@ namespace crucible::data_types {
         };
         using Base = adjacency_list;
     public:
-        explicit HeatGraph(Grid grid);
+        explicit HeatGraph(Grid grid, coordinate min_distance, coordinate max_distance);
         [[nodiscard]] vertex_descriptor get_vertex(const Point& position, Direction) const;
         [[nodiscard]] vertex_descriptor get_vertex(const Vertex&) const;
         [[nodiscard]] const Grid& get_grid() const;
     private:
+        coordinate m_min_distance {};
+        coordinate m_max_distance {};
         Grid m_grid {};
         std::unordered_map<Point, VertexPair, Point::Hasher> m_vertex_map {};
 

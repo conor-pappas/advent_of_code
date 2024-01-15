@@ -12,14 +12,18 @@ namespace crucible::data_types {
         static void init_heat_graph(HeatGraph&);
         static VertexPair create_vertices(HeatGraph&, const Point&);
 
-        static void create_arcs(HeatGraph&heat_graph, const Point&, Direction, coordinate size, coordinate scale);
-        static void create_arcs(HeatGraph&heat_graph, const Vertex&vertex, coordinate size, coordinate scale);
+        static void create_arcs(HeatGraph&heat_graph, const Point&, Direction, coordinate scale);
+        static void create_arcs(HeatGraph&heat_graph, const Vertex&vertex, coordinate scale);
         static vertex_descriptor get_vertex_descriptor(HeatGraph&, const Point&, Direction);
         static Point arc_direction(const Vertex& vertex);
     };
 
-    HeatGraph::HeatGraph(Grid  grid):
-        m_grid(std::move(grid)) { Private::init_heat_graph(*this); }
+    HeatGraph::HeatGraph(Grid  grid, const coordinate min_distance, const coordinate max_distance):
+        m_min_distance(min_distance),
+        m_max_distance(max_distance),
+        m_grid(std::move(grid)) {
+        Private::init_heat_graph(*this);
+    }
 
     HeatGraph::vertex_descriptor HeatGraph::get_vertex(const Point& position, const Direction direction) const {
         const auto [horizontal, vertical] = m_vertex_map.at(position);
@@ -48,10 +52,10 @@ namespace crucible::data_types {
         for (coordinate y = 0; y < grid.height(); ++y) {
             for (coordinate x = 0; x < grid.width(); ++x) {
                 auto position = Point { x, y };
-                create_arcs(heat_graph, position, Direction::Horizontal, 3, 1);
-                create_arcs(heat_graph, position, Direction::Horizontal, 3, -1);
-                create_arcs(heat_graph, position, Direction::Vertical, 3, 1);
-                create_arcs(heat_graph, position, Direction::Vertical, 3, -1);
+                create_arcs(heat_graph, position, Direction::Horizontal, 1);
+                create_arcs(heat_graph, position, Direction::Horizontal, -1);
+                create_arcs(heat_graph, position, Direction::Vertical, 1);
+                create_arcs(heat_graph, position, Direction::Vertical, -1);
             }
         }
     }
@@ -67,24 +71,26 @@ namespace crucible::data_types {
     }
 
     void HeatGraph::Private::create_arcs(
-        HeatGraph& heat_graph, const Point& point, const Direction direction, const coordinate size, const coordinate scale) {
+        HeatGraph& heat_graph, const Point& point, const Direction direction, const coordinate scale) {
         const auto descriptor = get_vertex_descriptor(heat_graph, point, direction);
         const auto vertex = support::graph::vertex_data(heat_graph, descriptor);
-        create_arcs(heat_graph, vertex, size, scale);
+        create_arcs(heat_graph, vertex, scale);
     }
 
     void HeatGraph::Private::create_arcs(
-        HeatGraph& heat_graph, const Vertex& vertex, const coordinate size, const coordinate scale)
+        HeatGraph& heat_graph, const Vertex& vertex, const coordinate scale)
     {
         const auto unit = scale * arc_direction(vertex);
         const Point start = vertex.position;
         Point end = start + unit;
         heat total_cost = 0;
         const auto start_vertex = get_vertex_descriptor(heat_graph, start, vertex.arrived_from);
-        for(coordinate i = 0; i < size && heat_graph.m_grid.contains(end); ++i, end += unit) {
+        for(coordinate i = 1; i <= heat_graph.m_max_distance && heat_graph.m_grid.contains(end); ++i, end += unit) {
             const auto end_vertex = get_vertex_descriptor(heat_graph, end, opposite(vertex.arrived_from));
             total_cost += support::graph::vertex_data(heat_graph, end_vertex).heat_loss;
-            add_arc(heat_graph, start_vertex, end_vertex, {total_cost});
+            if(i >= heat_graph.m_min_distance) {
+                add_arc(heat_graph, start_vertex, end_vertex, {total_cost});
+            }
         }
     }
 

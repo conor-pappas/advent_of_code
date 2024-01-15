@@ -14,7 +14,7 @@
 using namespace std;
 using namespace crucible::data_types;
 
-size_t part_1(const HeatGraph& heat_graph) {
+size_t min_heat(const HeatGraph& heat_graph) {
     constexpr Point start(0,0);
     const auto grid = heat_graph.get_grid();
     const Point end( grid.width()-1,  grid.height()-1);
@@ -28,14 +28,21 @@ size_t part_1(const HeatGraph& heat_graph) {
     const auto vert = std::get<0>(distances)[heat_graph.get_vertex(end, Direction::Vertical)];
     return std::min(horiz, vert);
 }
-size_t part_2() { return 0; }
+
+size_t part_1(const Grid& grid) {
+    return min_heat(HeatGraph(grid, 1, 3));
+}
+
+size_t part_2(const Grid& grid) {
+    return min_heat(HeatGraph(grid, 4, 10));
+}
 
 int main(const int argc, const char** argv) {
     const vector<string> lines = support::read_input("17", argc, argv);
 
     auto parse = [](const char c) { return c - '0'; };
-    const auto heat_graph = HeatGraph(support::parse_grid<heat>(lines, parse));
+    const auto heat_grid = support::parse_grid<heat>(lines, parse);
 
-    cout << "Part 1: " << part_1(heat_graph) << endl;
-    cout << "Part 2: " << part_2() << endl;
+    cout << "Part 1: " << part_1(heat_grid) << endl;
+    cout << "Part 2: " << part_2(heat_grid) << endl;
 }
