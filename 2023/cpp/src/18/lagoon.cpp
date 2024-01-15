@@ -79,19 +79,17 @@ size_t total_points(const InstructionCollection& instructions) {
     return interior_count + boundary_count;
 }
 
-size_t part_1(const InstructionCollection& instructions) {
-    return total_points(instructions);
-}
-
-size_t part_2() {
-    return 0;
-}
-
 int main(const int argc, const char** argv) {
     const vector<string> lines = support::read_input("18", argc, argv);
 
-    const InstructionCollection instructions = parse::parse_instructions(lines);
+    const vector<data_types::RawInstruction> raw_instructions = lagoon::parse::parse_instructions(lines);
+    InstructionCollection instructions_part_1;
+    InstructionCollection instructions_part_2;
+    for(const auto& raw_instruction : raw_instructions) {
+        instructions_part_1.push_back(raw_instruction.part_1);
+        instructions_part_2.push_back(raw_instruction.part_2);
+    }
 
-    cout << "Part 1: " << part_1(instructions) << endl;
-    cout << "Part 2: " << part_2() << endl;
+    cout << "Part 1: " << total_points(instructions_part_1) << endl;
+    cout << "Part 2: " << total_points(instructions_part_2) << endl;
 }
