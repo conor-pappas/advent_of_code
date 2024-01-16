@@ -8,7 +8,7 @@
 
 #include "label.hpp"
 #include "workflow.hpp"
-#include "part.hpp"
+#include "parts.hpp"
 
 namespace avalanche::data_types {
 
@@ -20,5 +20,12 @@ namespace avalanche::data_types {
         std::unordered_map<label, Workflow> m_workflows {};
     };
 
+    using PartRangeList = std::vector<PartRange>;
+    struct PartRangeAcceptance {
+        PartRangeList accept {};
+        PartRangeList reject {};
+    };
+
     bool test(const Plan&, const Part&);
+    PartRangeAcceptance test(const Plan&, const PartRange&);
 }

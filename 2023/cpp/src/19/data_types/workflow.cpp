@@ -14,4 +14,16 @@ namespace avalanche::data_types {
         }
         return workflow.default_label;
     }
+
+    PartRangeResultContainer follow_workflow(const Workflow& workflow, PartRange orig) {
+        auto part_range = orig;
+        PartRangeResultContainer results;
+        for (const auto& rule : workflow.rules) {
+            auto followed = follows(rule, part_range);
+            part_range = skips(rule, part_range);
+            results.emplace_back(rule.label, followed);
+        }
+        results.emplace_back(workflow.default_label, part_range);
+        return results;
+    }
 }

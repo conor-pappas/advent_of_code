@@ -10,16 +10,6 @@
 
 namespace avalanche::parse {
 
-    data_types::attribute_type parse_attribute_type(const char attr) {
-        switch(attr) {
-            case 'x': return &data_types::Part::x;
-            case 'm': return &data_types::Part::m;
-            case 'a': return &data_types::Part::a;
-            case 's': return &data_types::Part::s;
-            default: throw std::runtime_error("Invalid attribute");
-        }
-    }
-
     const std::regex PART_REGEX(R"(\{x=(\d+),m=(\d+),a=(\d+),s=(\d+)\})");
     data_types::Part parse_part(const std::string& part) {
         data_types::Part result;
@@ -41,7 +31,7 @@ namespace avalanche::parse {
         if(!std::regex_match(str, match, RULE_REGEX)) {
             throw std::runtime_error("Invalid step: " + str);
         }
-        result.attribute = parse_attribute_type(match[1].str()[0]);
+        result.attribute = static_cast<data_types::AttributeType>(match[1].str()[0]);
         result.compare = static_cast<data_types::Compare>(match[2].str()[0]);
         result.value = std::stoi(match[3]);
         result.label = match[4];

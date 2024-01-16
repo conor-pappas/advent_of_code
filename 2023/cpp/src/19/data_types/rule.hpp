@@ -6,19 +6,17 @@
 
 #include <optional>
 
-#include "part.hpp"
+#include "parts.hpp"
 #include "label.hpp"
 
 namespace avalanche::data_types {
-    using attribute_type = rating Part::*;
-
     enum class Compare : char {
         Greater = '>',
         Less = '<'
     };
 
     struct Rule {
-        attribute_type attribute {};
+        AttributeType attribute {};
         Compare compare {};
         rating value {};
         label label {};
@@ -26,6 +24,9 @@ namespace avalanche::data_types {
 
     bool matches(const Rule&, const Part&);
     std::optional<label> follow(const Rule&, const Part&);
+
+    PartRange follows(const Rule&, PartRange);
+    PartRange skips(const Rule&, PartRange);
 
 
 }

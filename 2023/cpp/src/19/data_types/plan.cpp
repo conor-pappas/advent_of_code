@@ -3,6 +3,7 @@
 //
 
 #include "plan.hpp"
+
 #include "label.hpp"
 
 namespace avalanche::data_types {
@@ -21,5 +22,25 @@ namespace avalanche::data_types {
             next_label = follow_workflow(workflow, part);
         }
         return next_label == ACCEPT;
+    }
+
+    PartRangeAcceptance test(const Plan& plan, const PartRange& part_range) {
+        PartRangeAcceptance results;
+        PartRangeResultContainer unresolved = {{START, part_range}};
+        while(!unresolved.empty()) {
+            auto [label, part_range] = unresolved.back();
+            unresolved.pop_back();
+
+            if(label == ACCEPT) {
+                results.accept.push_back(part_range);
+            } else if(label == REJECT) {
+                results.reject.push_back(part_range);
+            } else {
+                const auto& workflow = plan.lookup_workflow(label);
+                auto workflow_results = follow_workflow(workflow, part_range);
+                unresolved.insert(unresolved.begin(), workflow_results.begin(), workflow_results.end());
+            }
+        }
+        return results;
     }
 }
