@@ -10,7 +10,7 @@ namespace support::graph {
     struct no_data {};
 
     template <std::default_initializable VertexData = no_data, std::default_initializable ArcData = no_data>
-    class adjacency_list: public impl::adjacency_list_gen<VertexData, ArcData>::type {
+    class AdjacencyList: public impl::adjacency_list_gen<VertexData, ArcData>::type {
         using Base = typename impl::adjacency_list_gen<VertexData, ArcData>::type;
         using types = impl::types<VertexData, ArcData>;
     public:

@@ -30,7 +30,7 @@ namespace crucible::data_types {
         return (direction == Direction::Horizontal) ? horizontal : vertical;
     }
 
-    support::graph::adjacency_list<Vertex, Edge>::vertex_descriptor HeatGraph::get_vertex(const Vertex& vertex) const {
+    support::graph::AdjacencyList<Vertex, Edge>::vertex_descriptor HeatGraph::get_vertex(const Vertex& vertex) const {
         return get_vertex(vertex.position, vertex.arrived_from);
     }
 

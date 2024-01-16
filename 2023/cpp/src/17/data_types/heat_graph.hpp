@@ -12,7 +12,7 @@
 #include "types.hpp"
 
 namespace crucible::data_types {
-    class HeatGraph : public support::graph::adjacency_list<Vertex, Edge> {
+    class HeatGraph : public support::graph::AdjacencyList<Vertex, Edge> {
         struct VertexPair {
             vertex_descriptor horizontal {};
             vertex_descriptor vertical {};
