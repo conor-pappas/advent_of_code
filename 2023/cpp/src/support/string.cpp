@@ -23,4 +23,30 @@ namespace support {
         push();
         return strings;
     }
+
+    std::string& ltrim(std::string& str, const char* whitespace) {
+        str.erase(0, str.find_first_not_of(whitespace));
+        return str;
+    }
+
+    std::string& rtrim(std::string& str, const char* whitespace) {
+        str.erase(str.find_last_not_of(whitespace) + 1);
+        return str;
+    }
+
+    std::string& trim(std::string& str, const char* whitespace) {
+        return ltrim(rtrim(str, whitespace), whitespace);
+    }
+
+    std::string ltrim_copy(std::string str, const char* whitespace) {
+        return std::move(ltrim(str, whitespace));
+    }
+
+    std::string rtrim_copy(std::string str, const char* whitespace) {
+        return std::move(rtrim(str, whitespace));
+    }
+
+    std::string trim_copy(std::string str, const char* whitespace) {
+        return std::move(trim(str, whitespace));
+    }
 }

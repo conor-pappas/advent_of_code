@@ -11,7 +11,14 @@
 
 namespace support {
     // TODO: provide a version with a string delim
+    inline const char* WHITESPACE = " \t\n\r\f\v";
     [[nodiscard]] std::vector<std::string> split(const std::string&, const char&);
+    [[nodiscard]] std::string& ltrim(std::string&, const char* = WHITESPACE);
+    [[nodiscard]] std::string& rtrim(std::string&, const char* = WHITESPACE);
+    [[nodiscard]] std::string& trim(std::string&, const char* = WHITESPACE);
+    [[nodiscard]] std::string ltrim_copy(std::string, const char* = WHITESPACE);
+    [[nodiscard]] std::string rtrim_copy(std::string, const char* = WHITESPACE);
+    [[nodiscard]] std::string trim_copy(std::string, const char* = WHITESPACE);
 
     template<input_range_of<std::string> Range>
     [[nodiscard]] std::string join(const Range&, const std::string&);
