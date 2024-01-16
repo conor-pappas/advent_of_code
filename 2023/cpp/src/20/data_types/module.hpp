@@ -21,6 +21,8 @@ namespace pulse::data_types {
         virtual void register_input(const label&);
         virtual void register_output(const label&);
 
+        [[nodiscard]] virtual bool is_nand() const;
+
         virtual SignalList propagate(const Signal&);
     private:
         label m_label;

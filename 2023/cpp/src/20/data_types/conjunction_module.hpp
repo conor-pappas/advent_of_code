@@ -16,6 +16,7 @@ namespace pulse::data_types {
         using Base = Module;
 
         void register_input(const label&) override;
+        [[nodiscard]] bool is_nand() const override;
 
         [[nodiscard]] SignalList propagate(const Signal&) override;
     private:

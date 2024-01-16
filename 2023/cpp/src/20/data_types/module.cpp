@@ -24,6 +24,8 @@ namespace pulse::data_types {
         m_output_labels.push_back(label);
     }
 
+    bool Module::is_nand() const { return false; };
+
     SignalList Module::propagate(const Signal&) {
         return {};
     }

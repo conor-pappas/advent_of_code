@@ -10,6 +10,8 @@ namespace pulse::data_types {
         m_memory[label] = Pulse::Low;
     }
 
+    bool ConjunctionModule::is_nand() const { return true; };
+
     SignalList ConjunctionModule::propagate(const Signal& signal) {
         m_memory[signal.origin] = signal.pulse;
         auto output_pulse = Pulse::Low;

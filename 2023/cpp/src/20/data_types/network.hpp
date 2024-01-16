@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_map>
 #include <cassert>
+#include <functional>
 
 #include <range_concepts.hpp>
 
@@ -21,7 +22,7 @@ namespace pulse::data_types {
         size_t high {};
         size_t low {};
     };
-    // TODO: make this a class with memory management
+
     using Network = std::unordered_map<label, std::unique_ptr<pulse::data_types::Module>>;
 
     std::unique_ptr<Module> make_module(const label&, ModuleType);
@@ -32,7 +33,7 @@ namespace pulse::data_types {
 
     PulseCount& operator+=(PulseCount&, const Pulse&);
     PulseCount operator+(const PulseCount&, const PulseCount&);
-    PulseCount press_button(Network&);
+    PulseCount press_button(Network&, const std::function<void(const Signal&)>&visitor = {});
 
     template<support::range_of<label> Range>
     void link_modules(Network& network, const label& origin, const Range& destinations) {

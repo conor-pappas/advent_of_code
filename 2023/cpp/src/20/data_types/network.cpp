@@ -41,13 +41,14 @@ namespace pulse::data_types {
         return { lhs.high + rhs.high, lhs.low + rhs.low };
     }
 
-    PulseCount press_button(Network& network) {
+    PulseCount press_button(Network& network, const std::function<void(const Signal&)>& visitor) {
         std::deque<Signal> signals {{BUTTON, BROADCASTER, Pulse::Low } };
         PulseCount result;
         while(!signals.empty()) {
             auto signal = signals.front();
             signals.pop_front();
             result += signal.pulse;
+            if(visitor) visitor(signal);
             const auto module = network[signal.destination].get();
             auto output_signals = module->propagate(signal);
             signals.insert(signals.end(), output_signals.begin(), output_signals.end());
