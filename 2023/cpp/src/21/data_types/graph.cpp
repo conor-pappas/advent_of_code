@@ -6,8 +6,6 @@
 
 #include <cassert>
 
-#include "graph/graph_traits.hpp"
-
 namespace step::data_types {
     vertex_descriptor get_vertex(const Grid& grid, const Point& point) {
         return point.y() * grid.width() + point.x();
