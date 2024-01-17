@@ -50,7 +50,7 @@ namespace support::graph {
 
             using vertices_size_type = typename VertexSetContainer::size_type;
             using arcs_size_type = not_implemented;
-            using degree_size_type = not_implemented;
+            using degree_size_type = typename OutArcContainer::size_type;
         };
 
         template <typename Types>
